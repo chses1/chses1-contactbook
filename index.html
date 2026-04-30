@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>中山國小聯絡簿與學生簽到系統</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero-clock">
+      <section class="clock-block">
+        <div class="clock-card">
+          <div class="clock-label"><span class="live-dot"></span>現在時間</div>
+          <div id="clock" class="digital-clock" aria-live="polite">
+            <span id="clockHours" class="time-cell">--</span>
+            <span class="clock-separator">:</span>
+            <span id="clockMinutes" class="time-cell">--</span>
+            <span class="clock-separator">:</span>
+            <span id="clockSeconds" class="time-cell seconds">--</span>
+          </div>
+          <div id="clockPeriod" class="clock-period">--</div>
+        </div>
+      </section>
+      <div class="header-divider"></div>
+      <section class="date-block">
+        <div id="dateFull" class="date-full">----</div>
+        <div id="weekText" class="week-text">----</div>
+        <div id="lunarText" class="lunar-pill">中山國小</div>
+      </section>
+      <section class="arrival-card">
+        <div class="arrival-title">◷ 到校準時時間</div>
+        <label class="late-time-shell" for="lateTime">
+          <input id="lateTime" class="late-time-input" type="time" value="07:50" />
+          <span id="lateHour" class="late-time-part">07</span>
+          <span class="late-time-colon">:</span>
+          <span id="lateMinute" class="late-time-part">50</span>
+        </label>
+        <div id="timeStatus" class="arrival-status">準時時段 ✅</div>
+      </section>
+      <section class="top-buttons">
+        <button id="calendarBtn" class="icon-btn blue">▣<span>行事曆</span></button>
+        <button id="settingsBtn" class="icon-btn purple">⚙<span>系統設定</span></button>
+        <button id="fullscreenBtn" class="icon-btn dark">⛶<span>全螢幕</span></button>
+      </section>
+    </header>
+    <div id="topResizeHandle" class="resize-handle top-resize" title="拖曳調整上方時鐘區大小"></div>
+
+    <main class="main-grid">
+      <section class="panel contact-panel">
+        <div class="panel-head">
+          <div>
+            <h1><span class="title-icon book">▣</span>今日聯絡簿</h1>
+            <div id="selectedDateLabel" class="subtle">----</div>
+          </div>
+          <div class="head-actions">
+            <input id="datePicker" type="date" />
+            <button id="editBtn" class="primary-btn">編輯聯絡簿</button>
+            <button id="writingModeBtn" class="outline-btn">橫書顯示</button>
+            <button id="viewModeBtn" class="ghost-btn">直書顯示</button>
+          </div>
+        </div>
+
+        <div class="font-toolbar">
+          <button id="fontDownBtn" class="font-btn">A−</button>
+          <strong id="fontScaleLabel">100%</strong>
+          <button id="fontUpBtn" class="font-btn">A+</button>
+          <label class="font-select-label">
+            <select id="fontFamilySelect" class="font-select">
+              <option value="default">預設黑體</option>
+              <option value="rounded">圓體</option>
+              <option value="kai">標楷體</option>
+              <option value="iansui">芫荽注音字體</option>
+            </select>
+          </label>
+          <button id="fontResetBtn" class="ghost-btn small-btn">重設</button>
+        </div>
+
+        <div id="bookDisplay" class="book-display horizontal-mode">
+          <article id="homeworkCard" class="book-card blue-card">
+            <div class="circle-icon">▣</div>
+            <div>
+              <h2>今日功課</h2>
+              <div id="homeworkView" class="book-text"></div>
+            </div>
+          </article>
+          <article id="reminderCard" class="book-card green-card">
+            <div class="circle-icon">🔔</div>
+            <div>
+              <h2>明日提醒</h2>
+              <div id="reminderView" class="book-text"></div>
+            </div>
+          </article>
+          <article id="testCard" class="book-card orange-card">
+            <div class="circle-icon">✎</div>
+            <div>
+              <h2>考試通知</h2>
+              <div id="testView" class="book-text"></div>
+            </div>
+          </article>
+          <article id="noteCard" class="book-card purple-card">
+            <div class="circle-icon">📣</div>
+            <div>
+              <h2>生活叮嚀</h2>
+              <div id="noteView" class="book-text"></div>
+            </div>
+          </article>
+          <article id="teacherCard" class="book-card pink-card">
+            <div class="circle-icon">♥</div>
+            <div>
+              <h2>老師的話</h2>
+              <div id="teacherView" class="book-text"></div>
+            </div>
+          </article>
+          <div id="emptyBookMessage" class="empty-message">今天尚未填寫聯絡簿</div>
+        </div>
+
+        <div id="editor" class="editor hidden">
+          <label>今日功課<textarea id="homeworkInput" rows="4"></textarea></label>
+          <label>明日提醒<textarea id="reminderInput" rows="3"></textarea></label>
+          <label>考試通知<textarea id="testInput" rows="3"></textarea></label>
+          <label>生活叮嚀<textarea id="noteInput" rows="3"></textarea></label>
+          <label>老師的話<textarea id="teacherInput" rows="3"></textarea></label>
+          <div class="editor-actions">
+            <button id="copyYesterdayBtn" class="outline-btn">複製前一天</button>
+            <button id="saveBookBtn" class="primary-btn">儲存並顯示</button>
+          </div>
+          <div id="autosaveHint" class="subtle">資料會自動儲存在本機瀏覽器。</div>
+        </div>
+      </section>
+      <div id="mainResizeHandle" class="resize-handle main-resize" title="拖曳調整左右區域大小"></div>
+
+      <section class="panel attendance-panel">
+        <div class="panel-head attendance-head">
+          <div>
+            <h1><span class="title-icon people">♣</span>學生簽到區</h1>
+            <div class="subtle">點擊座號即可登記到校時間，再次點擊可檢視紀錄</div>
+          </div>
+          <button id="namesBtn" class="outline-btn">👥 名單設定</button>
+        </div>
+
+        <div class="summary-row">
+          <div class="summary-card ontime"><strong id="arrivedCount">0</strong><span>已到</span></div>
+          <div class="summary-card absent"><strong id="absentCount">0</strong><span>未到</span></div>
+          <div class="summary-card late"><strong id="lateCount">0</strong><span>遲到</span></div>
+          <div class="summary-card leave"><strong id="leaveCount">0</strong><span>請假</span></div>
+        </div>
+
+        <div id="studentGrid" class="student-grid"></div>
+
+        <div class="legend">
+          <span><i class="dot green"></i>準時（到校時間 ≤ 07:50）</span>
+          <span><i class="dot orange"></i>遲到（到校時間 ＞ 07:50）</span>
+          <span><i class="dot blue"></i>請假</span>
+          <span><i class="dot gray"></i>未到</span>
+        </div>
+
+        <div class="bottom-actions">
+          <button id="statsBtn" class="white-btn">📊 今日統計</button>
+          <button id="recordsBtn" class="white-btn">🗓 查看紀錄</button>
+          <button id="resetBtn" class="danger-btn">↻ 重設今日簽到</button>
+          <button id="exportBtn" class="success-btn">⇩ 匯出今日紀錄 CSV</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer-bar">
+      <span>▣ 資料已自動儲存於本機</span>
+      <span>版本：4.0.0</span>
+      <span id="lastSaved">最後儲存：--:--:--</span>
+    </footer>
+  </div>
+
+  <dialog id="studentDialog" class="modal">
+    <div class="modal-head">
+      <h2 id="studentTitle">學生資料</h2>
+      <button class="close-btn" data-close="studentDialog">×</button>
+    </div>
+    <div id="studentDetail" class="modal-body"></div>
+    <div class="modal-actions">
+      <button id="markArrivedBtn" class="primary-btn">登記到校</button>
+      <button id="markLeaveBtn" class="outline-btn">設為請假</button>
+      <button id="markAbsentBtn" class="ghost-btn">改回未到</button>
+    </div>
+  </dialog>
+
+  <dialog id="namesDialog" class="modal wide-modal">
+    <div class="modal-head">
+      <h2>學生名單設定</h2>
+      <button class="close-btn" data-close="namesDialog">×</button>
+    </div>
+    <p class="subtle">每行一位學生，格式：座號,姓名。例如：01,王小明</p>
+    <textarea id="namesInput" class="names-input"></textarea>
+    <div class="modal-actions">
+      <button id="resetNamesBtn" class="ghost-btn">恢復 1–30 號</button>
+      <button id="saveNamesBtn" class="primary-btn">儲存名單</button>
+    </div>
+  </dialog>
+
+  <dialog id="infoDialog" class="modal wide-modal">
+    <div class="modal-head">
+      <h2 id="infoTitle">資訊</h2>
+      <button class="close-btn" data-close="infoDialog">×</button>
+    </div>
+    <div id="infoContent" class="modal-body"></div>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
