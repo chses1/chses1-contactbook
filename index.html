@@ -11,7 +11,6 @@
     <header class="hero-clock">
       <section class="clock-block">
         <div class="clock-card">
-          <div class="clock-label"><span class="live-dot"></span>現在時間</div>
           <div id="clock" class="digital-clock" aria-live="polite">
             <span id="clockHours" class="time-cell">--</span>
             <span class="clock-separator">:</span>
@@ -19,17 +18,15 @@
             <span class="clock-separator">:</span>
             <span id="clockSeconds" class="time-cell seconds">--</span>
           </div>
-          <div id="clockPeriod" class="clock-period">--</div>
         </div>
       </section>
-      <div class="header-divider"></div>
       <section class="date-block">
         <div id="dateFull" class="date-full">----</div>
         <div id="weekText" class="week-text">----</div>
         <div id="lunarText" class="lunar-pill">中山國小</div>
       </section>
       <section class="arrival-card">
-        <div class="arrival-title">◷ 到校準時時間</div>
+        <div class="arrival-title">◷ 遲到時間設定</div>
         <label class="late-time-shell" for="lateTime">
           <input id="lateTime" class="late-time-input" type="time" value="07:50" />
           <span id="lateHour" class="late-time-part">07</span>
@@ -40,6 +37,7 @@
       </section>
       <section class="top-buttons">
         <button id="calendarBtn" class="icon-btn blue">▣<span>行事曆</span></button>
+        <button id="swapPanelsBtn" class="icon-btn teal">⇄<span>左右對調</span></button>
         <button id="settingsBtn" class="icon-btn purple">⚙<span>系統設定</span></button>
         <button id="fullscreenBtn" class="icon-btn dark">⛶<span>全螢幕</span></button>
       </section>
@@ -122,8 +120,8 @@
           <label>生活叮嚀<textarea id="noteInput" rows="3"></textarea></label>
           <label>老師的話<textarea id="teacherInput" rows="3"></textarea></label>
           <div class="editor-actions">
-            <button id="copyYesterdayBtn" class="outline-btn">複製前一天</button>
-            <button id="saveBookBtn" class="primary-btn">儲存並顯示</button>
+            <button id="copyYesterdayBtn" class="outline-btn">複製</button>
+            <button id="saveBookBtn" class="primary-btn">儲存</button>
           </div>
           <div id="autosaveHint" class="subtle">資料會自動儲存在本機瀏覽器。</div>
         </div>
@@ -149,8 +147,8 @@
         <div id="studentGrid" class="student-grid"></div>
 
         <div class="legend">
-          <span><i class="dot green"></i>準時（到校時間 ≤ 07:50）</span>
-          <span><i class="dot orange"></i>遲到（到校時間 ＞ 07:50）</span>
+          <span><i class="dot green"></i>準時（到校時間 ≤ <b id="lateLegendOnTime">07:50</b>）</span>
+          <span><i class="dot orange"></i>遲到（到校時間 ＞ <b id="lateLegendLate">07:50</b>）</span>
           <span><i class="dot blue"></i>請假</span>
           <span><i class="dot gray"></i>未到</span>
         </div>

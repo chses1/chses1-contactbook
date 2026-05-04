@@ -11,7 +11,7 @@ const defaultStudents = Array.from({length:30},(_,i)=>({seat:String(i+1).padStar
 const $ = id => document.getElementById(id);
 const refs = {
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
-  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),clockPeriod:$('clockPeriod'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),calendarBtn:$('calendarBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),fontResetBtn:$('fontResetBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
+  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),fontResetBtn:$('fontResetBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
   homeworkCard:$('homeworkCard'),reminderCard:$('reminderCard'),testCard:$('testCard'),noteCard:$('noteCard'),teacherCard:$('teacherCard'),emptyBookMessage:$('emptyBookMessage'),
   homeworkView:$('homeworkView'),reminderView:$('reminderView'),testView:$('testView'),noteView:$('noteView'),teacherView:$('teacherView'),
@@ -44,7 +44,14 @@ function init(){
   updateLateTimeDisplay();
   wireEvents(); installLayoutResizers(); installResponsiveSizing(); tick(); setInterval(tick,1000); renderAll();
 }
-function updateLateTimeDisplay(){ const [h='07',m='50']=(refs.lateTime.value||state.settings.lateTime||'07:50').split(':'); refs.lateHour.textContent=h; refs.lateMinute.textContent=m; }
+function updateLateTimeDisplay(){
+  const value=refs.lateTime.value||state.settings.lateTime||'07:50';
+  const [h='07',m='50']=value.split(':');
+  refs.lateHour.textContent=h;
+  refs.lateMinute.textContent=m;
+  if(refs.lateLegendOnTime) refs.lateLegendOnTime.textContent=value;
+  if(refs.lateLegendLate) refs.lateLegendLate.textContent=value;
+}
 function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
 function getLayout(){ if(!state.settings.layout) state.settings.layout={}; return state.settings.layout; }
 function applyLayout(){
@@ -52,6 +59,8 @@ function applyLayout(){
   if(!layout.topHeight) layout.topHeight=172;
   if(!layout.leftRatio) layout.leftRatio=.5;
   refs.shell.style.setProperty('--top-height',layout.topHeight+'px');
+  refs.mainGrid.classList.toggle('panels-swapped',!!layout.swapped);
+  if(refs.swapPanelsBtn) refs.swapPanelsBtn.querySelector('span').textContent=layout.swapped?'恢復左右':'左右對調';
   updateMainLayoutWidth();
   updateResponsiveSizing();
 }
@@ -78,6 +87,13 @@ function updateResponsiveSizing(){
     return clamp(Math.min(widthScale,heightScale),.72,1.18);
   };
   refs.shell.style.setProperty('--hero-scale',heroScale.toFixed(3));
+  const clockBox=refs.clock?.closest('.clock-block');
+  if(clockBox){
+    const boxWidth=Math.max(1,clockBox.clientWidth-12);
+    const boxHeight=Math.max(1,clockBox.clientHeight-12);
+    const clockSize=clamp(Math.min(boxWidth/4.58,boxHeight*1.08),56,220);
+    refs.shell.style.setProperty('--clock-font-size',clockSize.toFixed(1)+'px');
+  }
   contactPanel?.style.setProperty('--panel-scale',panelScale(contactPanel).toFixed(3));
   attendancePanel?.style.setProperty('--panel-scale',panelScale(attendancePanel).toFixed(3));
   fitBookTextSoon();
@@ -122,7 +138,7 @@ function tick(){
   const n=new Date();
   const hh=String(n.getHours()).padStart(2,'0'), mm=String(n.getMinutes()).padStart(2,'0'), ss=String(n.getSeconds()).padStart(2,'0');
   refs.clock.setAttribute('aria-label',`${hh}:${mm}:${ss}`);
-  refs.clockHours.textContent=hh; refs.clockMinutes.textContent=mm; refs.clockSeconds.textContent=ss; refs.clockPeriod.textContent=n.getHours()<12?'上午':'下午';
+  refs.clockHours.textContent=hh; refs.clockMinutes.textContent=mm; refs.clockSeconds.textContent=ss;
   refs.dateFull.textContent=`${n.getFullYear()}年${String(n.getMonth()+1).padStart(2,'0')}月${String(n.getDate()).padStart(2,'0')}日`; refs.weekText.textContent=`星期${'日一二三四五六'[n.getDay()]}`;
   refs.lunarText.textContent='中山國小聯絡簿系統';
   const hm=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; refs.timeStatus.textContent= hm<=state.settings.lateTime ? '準時時段 ✅' : '遲到時段 ⚠️';
@@ -132,6 +148,7 @@ function wireEvents(){
   refs.datePicker.onchange=()=>{ selectedDate=refs.datePicker.value; ensureDay(selectedDate); editMode=false; renderAll(); save(); };
   refs.calendarBtn.onclick=()=>window.open(CALENDAR_URL,'_blank','noopener');
   refs.lateTime.onchange=()=>{ state.settings.lateTime=refs.lateTime.value; updateLateTimeDisplay(); renderAttendance(); save(); };
+  refs.swapPanelsBtn.onclick=()=>{ const layout=getLayout(); layout.swapped=!layout.swapped; applyLayout(); save(); };
   refs.fontDownBtn.onclick=()=>changeFontScale(-0.1);
   refs.fontUpBtn.onclick=()=>changeFontScale(0.1);
   refs.fontFamilySelect.onchange=()=>{ state.settings.fontFamily=refs.fontFamilySelect.value; applyFontScale(); fitBookTextSoon(); save(); };
@@ -180,6 +197,7 @@ function formatInlineText(text){
 }
 function renderBook(){
   ensureDay(selectedDate); const b=state.books[selectedDate]||{};
+  refs.bookDisplay.closest('.contact-panel')?.classList.toggle('editing',editMode);
   refs.bookDisplay.classList.toggle('vertical-mode',state.settings.writingMode==='vertical'); refs.bookDisplay.classList.toggle('horizontal-mode',state.settings.writingMode!=='vertical');
   refs.writingModeBtn.textContent='橫書'; refs.viewModeBtn.textContent='直書';
   const items=[['homework',refs.homeworkCard,refs.homeworkView,refs.homeworkInput],['test',refs.testCard,refs.testView,refs.testInput],['reminder',refs.reminderCard,refs.reminderView,refs.reminderInput],['note',refs.noteCard,refs.noteView,refs.noteInput],['teacher',refs.teacherCard,refs.teacherView,refs.teacherInput]];
