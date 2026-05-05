@@ -168,6 +168,7 @@
 /* v4 contact book font controls */
 .font-toolbar{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin:12px 0 0;padding:10px 12px;border-radius:12px;background:#f8fbff;border:1px solid #e5edf7;color:#13284c;font-weight:900}
 .font-toolbar span{margin-right:6px;color:#64748b;font-size:15px}.font-btn{height:40px;min-width:60px;border:1px solid var(--line);background:#fff;border-radius:9px;font-size:18px;font-weight:950;cursor:pointer}.small-btn{padding:9px 14px;font-size:15px}.book-display{--book-font-scale:1}.book-display .book-text{font-size:calc(21px * var(--book-font-scale))}.book-display .book-card h2{font-size:calc(24px * var(--book-font-scale))}.editor textarea{font-size:calc(18px * var(--book-font-scale))}
+.align-toolbar{display:flex;align-items:center;gap:4px;padding:3px;border:1px solid var(--line);border-radius:10px;background:#fff}.align-btn{height:34px;border:0;border-radius:8px;background:transparent;color:#1f365d;font-size:15px;font-weight:950;padding:0 10px;cursor:pointer;white-space:nowrap}.align-btn.active{background:#1167df;color:#fff;box-shadow:0 4px 10px rgba(17,103,223,.22)}
 .font-select-label{display:flex;align-items:center;gap:8px;margin-left:6px;color:#64748b;font-size:15px;font-weight:900}.font-select{height:40px;border:1px solid var(--line);border-radius:9px;background:#fff;color:#13284c;font-size:16px;font-weight:900;padding:0 34px 0 12px;cursor:pointer}
 .book-display .book-card{flex:1;min-width:0;overflow:hidden}.horizontal-mode .book-card{flex:var(--card-weight,1) 1 0}.book-card h2,.book-text{font-family:var(--book-font-family,"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif)}.book-text{line-height:1.55;font-weight:750;overflow:hidden}.editor textarea{font-family:var(--book-font-family,"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif)}
 .book-line{display:flex;align-items:flex-start;gap:.45em;margin:.08em 0}.line-no{flex:0 0 auto;color:#2563eb;font-weight:950}.inline-token{font-family:inherit;white-space:nowrap}
@@ -198,8 +199,19 @@
 .vertical-mode[data-font-family="iansui"] .book-line{min-width:1.85em}
 .vertical-mode[data-font-family="iansui"] .book-line>span:last-child{min-width:1.65em}
 
+.horizontal-mode[data-align="left"] .book-card h2,.horizontal-mode[data-align="left"] .book-text{text-align:left}.horizontal-mode[data-align="left"] .book-line{justify-content:flex-start}
+.horizontal-mode[data-align="center"] .book-card h2,.horizontal-mode[data-align="center"] .book-text{text-align:center}.horizontal-mode[data-align="center"] .book-line{justify-content:center}
+.horizontal-mode[data-align="right"] .book-card h2,.horizontal-mode[data-align="right"] .book-text{text-align:right}.horizontal-mode[data-align="right"] .book-line{justify-content:flex-end}
+.vertical-mode[data-align="left"] .book-card>div:not(.circle-icon),.vertical-mode[data-align="left"] .book-text{justify-content:flex-end}
+.vertical-mode[data-align="center"] .book-card>div:not(.circle-icon),.vertical-mode[data-align="center"] .book-text{justify-content:center}
+.vertical-mode[data-align="right"] .book-card>div:not(.circle-icon),.vertical-mode[data-align="right"] .book-text{justify-content:flex-start}
+.vertical-mode[data-align="left"] .book-card{justify-content:flex-end}
+.vertical-mode[data-align="center"] .book-card{justify-content:center}
+.vertical-mode[data-align="right"] .book-card{justify-content:flex-start}
+.vertical-mode .book-card>div:not(.circle-icon){width:100%}
+
 /* compact contact-book controls */
-.contact-panel .panel-head{align-items:center;gap:8px}.contact-panel h1{font-size:32px;white-space:nowrap}.contact-panel .panel-head .subtle{display:none}.contact-panel .head-actions{display:grid;grid-template-columns:158px 64px 64px 64px;gap:8px;align-items:center}.contact-panel .head-actions input[type=date]{width:158px;height:46px;font-size:17px;padding:0 10px}.contact-panel .head-actions button{width:64px;height:46px;padding:0;font-size:17px;white-space:nowrap;line-height:1}.contact-panel .font-toolbar{justify-content:flex-end;gap:8px;padding:10px}.contact-panel .font-btn{width:58px;min-width:58px}.contact-panel #fontScaleLabel{width:58px;text-align:center;white-space:nowrap}.contact-panel .font-select-label{margin-left:0}.contact-panel .font-select{width:160px}.contact-panel .small-btn{width:64px;height:40px;padding:0;white-space:nowrap}
+.contact-panel .panel-head{align-items:center;gap:8px}.contact-panel h1{font-size:32px;white-space:nowrap}.contact-panel .panel-head .subtle{display:none}.contact-panel .head-actions{display:grid;grid-template-columns:158px 64px 64px 64px;gap:8px;align-items:center}.contact-panel .head-actions input[type=date]{width:158px;height:46px;font-size:17px;padding:0 10px}.contact-panel .head-actions button{width:64px;height:46px;padding:0;font-size:17px;white-space:nowrap;line-height:1}.contact-panel .font-toolbar{justify-content:flex-end;gap:8px;padding:10px;flex-wrap:wrap}.contact-panel .font-btn{width:58px;min-width:58px}.contact-panel #fontScaleLabel{width:58px;text-align:center;white-space:nowrap}.contact-panel .font-select-label{margin-left:0}.contact-panel .font-select{width:160px}.contact-panel .small-btn{width:64px;height:40px;padding:0;white-space:nowrap}
 
 /* v4 student buttons: seat number only */
 .student-btn{position:relative}.student-btn .seat{font-size:36px}.student-btn .name,.student-btn .status{display:none!important}.student-btn::after{content:"";position:absolute;left:12px;bottom:10px;width:12px;height:12px;border-radius:50%;background:#a8b2c2}.student-btn.ontime::after{background:#15a65a}.student-btn.late::after{background:#f59e0b}.student-btn.leave::after{background:#1d6ee8}

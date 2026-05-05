@@ -11,7 +11,7 @@ const defaultStudents = Array.from({length:30},(_,i)=>({seat:String(i+1).padStar
 const $ = id => document.getElementById(id);
 const refs = {
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
-  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),fontResetBtn:$('fontResetBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
+  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontResetBtn:$('fontResetBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
   homeworkCard:$('homeworkCard'),reminderCard:$('reminderCard'),testCard:$('testCard'),noteCard:$('noteCard'),teacherCard:$('teacherCard'),emptyBookMessage:$('emptyBookMessage'),
   homeworkView:$('homeworkView'),reminderView:$('reminderView'),testView:$('testView'),noteView:$('noteView'),teacherView:$('teacherView'),
@@ -32,8 +32,8 @@ function nowTime(){ return new Date().toLocaleTimeString('zh-TW',{hour12:false})
 function loadState(){
   let raw=localStorage.getItem(STORAGE_KEY);
   if(!raw){ for(const k of OLD_KEYS){ if(localStorage.getItem(k)){ raw=localStorage.getItem(k); break; } } }
-  if(raw){ try{ const s=JSON.parse(raw); return {students:s.students||defaultStudents,books:s.books||{},attendance:s.attendance||{},settings:{lateTime:s.settings?.lateTime||'07:50',writingMode:s.settings?.writingMode||'horizontal',fontScale:s.settings?.fontScale||1,fontFamily:s.settings?.fontFamily||'default',layout:s.settings?.layout||{}}} }catch(e){} }
-  return {students:defaultStudents,books:{},attendance:{},settings:{lateTime:'07:50',writingMode:'horizontal',fontScale:1,fontFamily:'default',layout:{}}};
+  if(raw){ try{ const s=JSON.parse(raw); return {students:s.students||defaultStudents,books:s.books||{},attendance:s.attendance||{},settings:{lateTime:s.settings?.lateTime||'07:50',writingMode:s.settings?.writingMode||'horizontal',fontScale:s.settings?.fontScale||1,fontFamily:s.settings?.fontFamily||'default',textAlign:s.settings?.textAlign||'center',layout:s.settings?.layout||{}}} }catch(e){} }
+  return {students:defaultStudents,books:{},attendance:{},settings:{lateTime:'07:50',writingMode:'horizontal',fontScale:1,fontFamily:'default',textAlign:'center',layout:{}}};
 }
 function save(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); refs.lastSaved.textContent='最後儲存：'+nowTime(); }
 function ensureDay(key){ if(!state.attendance[key]) state.attendance[key]={}; if(!state.books[key]) state.books[key]={homework:'',reminder:'',test:'',note:'',teacher:''}; }
@@ -151,6 +151,9 @@ function wireEvents(){
   refs.swapPanelsBtn.onclick=()=>{ const layout=getLayout(); layout.swapped=!layout.swapped; applyLayout(); save(); };
   refs.fontDownBtn.onclick=()=>changeFontScale(-0.1);
   refs.fontUpBtn.onclick=()=>changeFontScale(0.1);
+  refs.alignLeftBtn.onclick=()=>setBookAlign('left');
+  refs.alignCenterBtn.onclick=()=>setBookAlign('center');
+  refs.alignRightBtn.onclick=()=>setBookAlign('right');
   refs.fontFamilySelect.onchange=()=>{ state.settings.fontFamily=refs.fontFamilySelect.value; applyFontScale(); fitBookTextSoon(); save(); };
   refs.fontResetBtn.onclick=()=>{ state.settings.fontScale=1; state.settings.fontFamily='default'; refs.fontFamilySelect.value='default'; applyFontScale(); fitBookTextSoon(); save(); };
 
@@ -175,7 +178,17 @@ function wireEvents(){
 }
 function changeFontScale(delta){ state.settings.fontScale=Math.max(0.75,Math.min(1.6,Number((state.settings.fontScale+delta).toFixed(2)))); applyFontScale(); fitBookTextSoon(); save(); }
 function applyFontScale(){ const scale=state.settings.fontScale||1; const fontKey=state.settings.fontFamily||'default'; const family=FONT_STACKS[fontKey]||FONT_STACKS.default; refs.bookDisplay.dataset.fontFamily=fontKey; refs.editor.dataset.fontFamily=fontKey; refs.bookDisplay.style.setProperty('--book-font-scale',scale); refs.editor.style.setProperty('--book-font-scale',scale); refs.bookDisplay.style.setProperty('--book-font-family',family); refs.editor.style.setProperty('--book-font-family',family); refs.fontScaleLabel.textContent=Math.round(scale*100)+'%'; }
-function renderAll(){ refs.selectedDateLabel.textContent=displayDate(selectedDate); applyFontScale(); renderBook(); renderAttendance(); }
+function setBookAlign(align){ state.settings.textAlign=align; applyBookAlign(); fitBookTextSoon(); save(); }
+function applyBookAlign(){
+  const align=['left','center','right'].includes(state.settings.textAlign) ? state.settings.textAlign : 'center';
+  refs.bookDisplay.dataset.align=align;
+  [[refs.alignLeftBtn,'left'],[refs.alignCenterBtn,'center'],[refs.alignRightBtn,'right']].forEach(([btn,value])=>{
+    if(!btn) return;
+    btn.classList.toggle('active',align===value);
+    btn.setAttribute('aria-pressed',String(align===value));
+  });
+}
+function renderAll(){ refs.selectedDateLabel.textContent=displayDate(selectedDate); applyFontScale(); applyBookAlign(); renderBook(); renderAttendance(); }
 function escapeHtml(text){ return String(text).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 function getBookLines(text){
   const lines=String(text||'').split('\n').map(line=>line.trim()).filter(Boolean);
@@ -198,6 +211,7 @@ function formatInlineText(text){
 function renderBook(){
   ensureDay(selectedDate); const b=state.books[selectedDate]||{};
   refs.bookDisplay.closest('.contact-panel')?.classList.toggle('editing',editMode);
+  applyBookAlign();
   refs.bookDisplay.classList.toggle('vertical-mode',state.settings.writingMode==='vertical'); refs.bookDisplay.classList.toggle('horizontal-mode',state.settings.writingMode!=='vertical');
   refs.writingModeBtn.textContent='橫書'; refs.viewModeBtn.textContent='直書';
   const items=[['homework',refs.homeworkCard,refs.homeworkView,refs.homeworkInput],['test',refs.testCard,refs.testView,refs.testInput],['reminder',refs.reminderCard,refs.reminderView,refs.reminderInput],['note',refs.noteCard,refs.noteView,refs.noteInput],['teacher',refs.teacherCard,refs.teacherView,refs.teacherInput]];
