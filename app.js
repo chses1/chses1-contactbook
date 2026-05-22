@@ -22,7 +22,7 @@ const refs = {
   homeworkInput:$('homeworkInput'),reminderInput:$('reminderInput'),testInput:$('testInput'),noteInput:$('noteInput'),teacherInput:$('teacherInput'),saveBookBtn:$('saveBookBtn'),copyYesterdayBtn:$('copyYesterdayBtn'),autosaveHint:$('autosaveHint'),
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
   statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),resetBtn:$('resetBtn'),exportBtn:$('exportBtn'),lastSaved:$('lastSaved'),
-  studentDialog:$('studentDialog'),studentTitle:$('studentTitle'),studentDetail:$('studentDetail'),markArrivedBtn:$('markArrivedBtn'),markLeaveBtn:$('markLeaveBtn'),markAbsentBtn:$('markAbsentBtn'),
+  studentDialog:$('studentDialog'),studentTitle:$('studentTitle'),studentDetail:$('studentDetail'),markOnTimeBtn:$('markOnTimeBtn'),markLateBtn:$('markLateBtn'),markLeaveBtn:$('markLeaveBtn'),markAbsentBtn:$('markAbsentBtn'),
   namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent')
 };
 let state = loadState();
@@ -216,9 +216,10 @@ function wireEvents(){
   refs.publishShareBtn.onclick=publishParentShare;
   refs.copyShareBtn.onclick=copyParentShareLink;
   document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
-  refs.markArrivedBtn.onclick=()=>{markSeat(selectedSeat,'arrived'); refs.studentDialog.close();};
+  refs.markOnTimeBtn.onclick=()=>{markSeat(selectedSeat,'ontime'); refs.studentDialog.close();};
+  refs.markLateBtn.onclick=()=>{markSeat(selectedSeat,'late'); refs.studentDialog.close();};
   refs.markLeaveBtn.onclick=()=>{markSeat(selectedSeat,'leave'); refs.studentDialog.close();};
-  refs.markAbsentBtn.onclick=()=>{delete state.attendance[selectedDate][selectedSeat]; renderAttendance(); save(); refs.studentDialog.close();};
+  refs.markAbsentBtn.onclick=()=>{markSeat(selectedSeat,'absent'); refs.studentDialog.close();};
 }
 function changeFontScale(delta){ state.settings.fontScale=Math.max(0.75,Math.min(1.6,Number((state.settings.fontScale+delta).toFixed(2)))); applyFontScale(); fitBookTextSoon(); save(); }
 function applyFontScale(){ const scale=state.settings.fontScale||1; const fontKey=state.settings.fontFamily||'default'; const family=FONT_STACKS[fontKey]||FONT_STACKS.default; refs.bookDisplay.dataset.fontFamily=fontKey; refs.editor.dataset.fontFamily=fontKey; refs.bookDisplay.style.setProperty('--book-font-scale',scale); refs.editor.style.setProperty('--book-font-scale',scale); refs.bookDisplay.style.setProperty('--book-font-family',family); refs.editor.style.setProperty('--book-font-family',family); refs.fontScaleLabel.textContent=Math.round(scale*100)+'%'; }
@@ -494,8 +495,21 @@ function renderAttendance(){
   refs.arrivedCount.textContent=on+late; refs.lateCount.textContent=late; refs.leaveCount.textContent=leave; refs.absentCount.textContent=state.students.length-on-late-leave;
 }
 function statusText(r){ if(!r)return'未到'; if(r.status==='ontime')return r.time||'準時'; if(r.status==='late')return r.time||'遲到'; if(r.status==='leave')return'請假'; return'未到'; }
-function studentClick(seat){ const rec=state.attendance[selectedDate][seat]; if(!rec){ markSeat(seat,'arrived'); return; } openStudent(seat); }
-function markSeat(seat,mode){ if(!seat)return; if(mode==='leave') state.attendance[selectedDate][seat]={status:'leave',time:'請假',updatedAt:new Date().toISOString()}; else { const t=nowTime().slice(0,5); state.attendance[selectedDate][seat]={status:t<=state.settings.lateTime?'ontime':'late',time:t,updatedAt:new Date().toISOString()}; } renderAttendance(); save(); }
+function studentClick(seat){ const rec=state.attendance[selectedDate][seat]; if(!rec){ markSeat(seat,'auto'); return; } openStudent(seat); }
+function markSeat(seat,mode){
+  if(!seat) return;
+  if(mode==='absent'){
+    delete state.attendance[selectedDate][seat];
+  } else if(mode==='leave'){
+    state.attendance[selectedDate][seat]={status:'leave',time:'請假',updatedAt:new Date().toISOString()};
+  } else {
+    const t=nowTime().slice(0,5);
+    const status=mode==='ontime' || mode==='late' ? mode : (t<=state.settings.lateTime?'ontime':'late');
+    state.attendance[selectedDate][seat]={status,time:t,updatedAt:new Date().toISOString()};
+  }
+  renderAttendance();
+  save();
+}
 function openStudent(seat){ selectedSeat=seat; const st=state.students.find(s=>s.seat===seat); const r=state.attendance[selectedDate][seat]; const stats=getStudentStats(seat); refs.studentTitle.textContent=`${seat}號 ${st?.name||''}`; refs.studentDetail.innerHTML=`<p>今天狀態：<b>${statusText(r)}</b></p><p>今日記錄時間：<b>${r?.time||'--'}</b></p><hr><p>累計準時：${stats.ontime} 次</p><p>累計遲到：${stats.late} 次</p><p>累計請假：${stats.leave} 次</p>`; refs.studentDialog.showModal(); }
 function getStudentStats(seat){ const out={ontime:0,late:0,leave:0}; Object.values(state.attendance).forEach(day=>{ const r=day[seat]; if(r?.status&&out[r.status]!==undefined) out[r.status]++; }); return out; }
 function studentsToText(){ return state.students.map(s=>`${s.seat},${s.name}`).join('\n'); }
