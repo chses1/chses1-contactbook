@@ -410,7 +410,7 @@ async function subscribeTeacherData(){
   const ref=teacherDocRef();
   const snap=await cloud.api.getDoc(ref);
   if(!snap.exists()){
-    await cloud.api.setDoc(ref,serializeTeacherState(),{merge:true});
+    await cloud.api.setDoc(ref,serializeTeacherState());
     updateCloudUi('已建立教師雲端資料，並上傳目前本機內容。');
   }
   cloud.unsubscribe=cloud.api.onSnapshot(ref,docSnap=>{
@@ -426,7 +426,7 @@ function queueCloudSave(){
   clearTimeout(cloudSaveTimer);
   cloudSaveTimer=setTimeout(async()=>{
     try{
-      await cloud.api.setDoc(teacherDocRef(),serializeTeacherState(),{merge:true});
+      await cloud.api.setDoc(teacherDocRef(),serializeTeacherState());
       updateCloudUi('已同步到教師雲端：'+nowTime());
     }catch(err){
       console.error(err);
@@ -447,7 +447,7 @@ async function signOutTeacher(){
 async function publishParentShare(){
   if(!cloud.user){ showInfo('尚未登入','<p>請先用教師 Google 帳號登入，再更新家長分享。</p>'); return; }
   try{
-    await cloud.api.setDoc(publicShareDocRef(),serializePublicShare(),{merge:true});
+    await cloud.api.setDoc(publicShareDocRef(),serializePublicShare());
     await copyParentShareLink(false);
     showInfo('家長分享已更新',`<p>家長連結已複製，可傳給家長：</p><p><b>${escapeHtml(parentShareLink())}</b></p><p>家長可看到聯絡簿與座號簽到狀態，但看不到學生姓名，也不能修改簽到。</p>`);
   }catch(err){
