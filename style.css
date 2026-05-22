@@ -215,6 +215,7 @@
 
 /* v4 student buttons: seat number only */
 .student-btn{position:relative}.student-btn .seat{font-size:36px}.student-btn .name,.student-btn .status{display:none!important}.student-btn::after{content:"";position:absolute;left:12px;bottom:10px;width:12px;height:12px;border-radius:50%;background:#a8b2c2}.student-btn.ontime::after{background:#15a65a}.student-btn.late::after{background:#f59e0b}.student-btn.leave::after{background:#1d6ee8}
+.split-label{min-width:84px;min-height:58px;display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.25;white-space:normal}
 
 /* teacher-adjustable layout */
 .app-shell{--top-height:172px;--left-width:1fr;--hero-scale:1;--panel-scale:1;gap:6px}
