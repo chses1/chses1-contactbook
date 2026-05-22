@@ -13,7 +13,7 @@ const FONT_STACKS = {
 const defaultStudents = Array.from({length:30},(_,i)=>({seat:String(i+1).padStart(2,'0'),name:`${i+1}號`}));
 const $ = id => document.getElementById(id);
 const refs = {
-  cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
+  cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
   clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontResetBtn:$('fontResetBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
@@ -302,6 +302,7 @@ function updateCloudUi(message){
   refs.signOutBtn.disabled=shareMode || !cloud.user;
   refs.publishShareBtn.disabled=shareMode || !cloud.user;
   refs.copyShareBtn.disabled=shareMode || !cloud.user;
+  if(refs.shareAttendanceToggle) refs.shareAttendanceToggle.disabled=shareMode || !cloud.user;
   if(shareMode){
     refs.cloudModeLabel.textContent='家長分享模式';
     refs.cloudHint.textContent=message || '正在讀取老師分享的聯絡簿。';
@@ -374,14 +375,16 @@ function serializeTeacherState(){
   };
 }
 function serializePublicShare(){
+  const shareAttendance=!!refs.shareAttendanceToggle?.checked;
   return {
     ownerUid:cloud.user.uid,
     classId:getClassId(),
     className:getClassName(),
     sharedDate:selectedDate,
+    shareAttendance,
     books:{[selectedDate]:state.books[selectedDate] || {homework:'',reminder:'',test:'',note:'',teacher:''}},
-    attendance:{[selectedDate]:state.attendance[selectedDate] || {}},
-    students:state.students.map(st=>({seat:st.seat,name:`${st.seat}號`})),
+    attendance:shareAttendance ? {[selectedDate]:state.attendance[selectedDate] || {}} : {},
+    students:shareAttendance ? state.students.map(st=>({seat:st.seat,name:`${st.seat}號`})) : [],
     settings:{
       writingMode:state.settings.writingMode,
       fontScale:state.settings.fontScale,
@@ -449,7 +452,8 @@ async function publishParentShare(){
   try{
     await cloud.api.setDoc(publicShareDocRef(),serializePublicShare());
     await copyParentShareLink(false);
-    showInfo('家長分享已更新',`<p>家長連結已複製，可傳給家長：</p><p><b>${escapeHtml(parentShareLink())}</b></p><p>家長可看到聯絡簿與座號簽到狀態，但看不到學生姓名，也不能修改簽到。</p>`);
+    const shareNote=refs.shareAttendanceToggle?.checked ? '家長可看到聯絡簿與座號簽到狀態，但看不到學生姓名，也不能修改簽到。' : '家長只會看到聯絡簿，不會看到學生出席區。';
+    showInfo('家長分享已更新',`<p>家長連結已複製，可傳給家長：</p><p><b>${escapeHtml(parentShareLink())}</b></p><p>${shareNote}</p>`);
   }catch(err){
     console.error(err);
     showInfo('分享失敗','<p>無法更新家長分享，請確認 Firestore 規則已發布，且目前已登入教師帳號。</p>');
@@ -473,6 +477,7 @@ async function loadParentShare(){
     const data=snap.data();
     selectedDate=data.sharedDate || Object.keys(data.books||{}).sort().pop() || selectedDate;
     refs.datePicker.value=selectedDate;
+    document.body.classList.toggle('share-attendance-enabled',!!data.shareAttendance);
     state=normalizeState({
       students:data.students || defaultStudents,
       books:data.books || {},
