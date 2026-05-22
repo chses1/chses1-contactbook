@@ -1,6 +1,9 @@
 const STORAGE_KEY = 'cses-contactbook-attendance-v4';
 const OLD_KEYS = [];
 const CALENDAR_URL = 'https://docs.google.com/spreadsheets/d/1Dbs8Czjl6odsq6HOAz2J_ZU3gXmzm5lU8mSbXoOQD3E/edit?usp=sharing';
+const FIREBASE_CDN_VERSION = '10.12.5';
+const firebaseConfig = window.CSES_FIREBASE_CONFIG || {};
+const classConfig = window.CSES_CLASS_CONFIG || {};
 const FONT_STACKS = {
   default:'"Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif',
   rounded:'"jf open 粉圓 2.1","GenJyuuGothic","M PLUS Rounded 1c","Noto Sans TC","Microsoft JhengHei",sans-serif',
@@ -10,6 +13,7 @@ const FONT_STACKS = {
 const defaultStudents = Array.from({length:30},(_,i)=>({seat:String(i+1).padStart(2,'0'),name:`${i+1}號`}));
 const $ = id => document.getElementById(id);
 const refs = {
+  cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
   clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontResetBtn:$('fontResetBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
@@ -25,17 +29,52 @@ let state = loadState();
 let selectedDate = dateKey(new Date());
 let editMode = false;
 let selectedSeat = null;
+let isApplyingRemoteState = false;
+let cloudSaveTimer = null;
+const cloud = {
+  configured:isFirebaseConfigured(),
+  parentShareId:new URLSearchParams(location.search).get('share') || '',
+  user:null,
+  auth:null,
+  db:null,
+  provider:null,
+  api:null,
+  unsubscribe:null
+};
 
 function dateKey(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
 function displayDate(key){ const d = new Date(key+'T00:00:00'); const w='日一二三四五六'[d.getDay()]; return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${w}）`; }
 function nowTime(){ return new Date().toLocaleTimeString('zh-TW',{hour12:false}); }
+function isFirebaseConfigured(){ return ['apiKey','authDomain','projectId','appId'].every(k=>String(firebaseConfig[k]||'').trim()); }
+function getClassId(){ return String(classConfig.classId || 'default').replace(/[^\w-]/g,'') || 'default'; }
+function getClassName(){ return String(classConfig.className || '中山國小聯絡簿'); }
+function getShareId(){ return String(classConfig.shareId || `${cloud.user?.uid || 'teacher'}-${getClassId()}`).replace(/[^\w-]/g,''); }
+function normalizeState(s={}){
+  return {
+    students:Array.isArray(s.students) && s.students.length ? s.students : defaultStudents,
+    books:s.books || {},
+    attendance:s.attendance || {},
+    settings:{
+      lateTime:s.settings?.lateTime || '07:50',
+      writingMode:s.settings?.writingMode || 'horizontal',
+      fontScale:s.settings?.fontScale || 1,
+      fontFamily:s.settings?.fontFamily || 'default',
+      textAlign:s.settings?.textAlign || 'center',
+      layout:s.settings?.layout || {}
+    }
+  };
+}
 function loadState(){
   let raw=localStorage.getItem(STORAGE_KEY);
   if(!raw){ for(const k of OLD_KEYS){ if(localStorage.getItem(k)){ raw=localStorage.getItem(k); break; } } }
-  if(raw){ try{ const s=JSON.parse(raw); return {students:s.students||defaultStudents,books:s.books||{},attendance:s.attendance||{},settings:{lateTime:s.settings?.lateTime||'07:50',writingMode:s.settings?.writingMode||'horizontal',fontScale:s.settings?.fontScale||1,fontFamily:s.settings?.fontFamily||'default',textAlign:s.settings?.textAlign||'center',layout:s.settings?.layout||{}}} }catch(e){} }
-  return {students:defaultStudents,books:{},attendance:{},settings:{lateTime:'07:50',writingMode:'horizontal',fontScale:1,fontFamily:'default',textAlign:'center',layout:{}}};
+  if(raw){ try{ return normalizeState(JSON.parse(raw)); }catch(e){} }
+  return normalizeState();
 }
-function save(){ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); refs.lastSaved.textContent='最後儲存：'+nowTime(); }
+function save(){
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  refs.lastSaved.textContent='最後儲存：'+nowTime();
+  if(!isApplyingRemoteState) queueCloudSave();
+}
 function ensureDay(key){ if(!state.attendance[key]) state.attendance[key]={}; if(!state.books[key]) state.books[key]={homework:'',reminder:'',test:'',note:'',teacher:''}; }
 function init(){
   if(state.settings.fontFamily==='bopomofo') state.settings.fontFamily='iansui';
@@ -43,6 +82,7 @@ function init(){
   applyLayout();
   updateLateTimeDisplay();
   wireEvents(); installLayoutResizers(); installResponsiveSizing(); tick(); setInterval(tick,1000); renderAll();
+  initCloud();
 }
 function updateLateTimeDisplay(){
   const value=refs.lateTime.value||state.settings.lateTime||'07:50';
@@ -170,7 +210,11 @@ function wireEvents(){
   refs.exportBtn.onclick=exportCsv;
   refs.statsBtn.onclick=showTodayStats;
   refs.recordsBtn.onclick=showRecords;
-  refs.settingsBtn.onclick=()=>showInfo('系統設定',`<p>目前資料會儲存在這台電腦的瀏覽器 localStorage。</p><p>到校準時時間：<b>${state.settings.lateTime}</b></p><p>建議固定使用同一台教室大螢幕電腦與同一個瀏覽器。</p>`);
+  refs.settingsBtn.onclick=()=>showInfo('系統設定',`<p>目前儲存模式：<b>${cloud.user?'教師雲端同步':'本機瀏覽器備援'}</b></p><p>到校準時時間：<b>${state.settings.lateTime}</b></p><p>Firebase 尚未設定或未登入時，資料仍會存在這台電腦的瀏覽器。</p>`);
+  refs.signInBtn.onclick=signInTeacher;
+  refs.signOutBtn.onclick=signOutTeacher;
+  refs.publishShareBtn.onclick=publishParentShare;
+  refs.copyShareBtn.onclick=copyParentShareLink;
   document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
   refs.markArrivedBtn.onclick=()=>{markSeat(selectedSeat,'arrived'); refs.studentDialog.close();};
   refs.markLeaveBtn.onclick=()=>{markSeat(selectedSeat,'leave'); refs.studentDialog.close();};
@@ -250,10 +294,203 @@ function fitBookText(){
   });
 }
 function writeBookFromInputs(){ state.books[selectedDate]={homework:refs.homeworkInput.value,reminder:refs.reminderInput.value,test:refs.testInput.value,note:refs.noteInput.value,teacher:refs.teacherInput.value}; }
+function updateCloudUi(message){
+  const shareMode=!!cloud.parentShareId;
+  document.body.classList.toggle('parent-share-mode',shareMode);
+  refs.signInBtn.disabled=shareMode || !cloud.configured || !!cloud.user;
+  refs.signOutBtn.disabled=shareMode || !cloud.user;
+  refs.publishShareBtn.disabled=shareMode || !cloud.user;
+  refs.copyShareBtn.disabled=shareMode || !cloud.user;
+  if(shareMode){
+    refs.cloudModeLabel.textContent='家長分享模式';
+    refs.cloudHint.textContent=message || '正在讀取老師分享的聯絡簿。';
+    refs.storageStatus.textContent='▣ 家長只讀分享頁';
+    return;
+  }
+  if(!cloud.configured){
+    refs.cloudModeLabel.textContent='本機模式';
+    refs.cloudHint.textContent='請先填寫 firebase-config.js，資料目前只存在這台電腦。';
+    refs.storageStatus.textContent='▣ 資料已自動儲存於本機';
+    return;
+  }
+  if(cloud.user){
+    refs.cloudModeLabel.textContent='教師雲端同步';
+    refs.cloudHint.textContent=message || `已登入：${cloud.user.displayName || cloud.user.email || '教師帳號'}`;
+    refs.storageStatus.textContent='▣ 資料已儲存在本機並同步到教師雲端';
+    return;
+  }
+  refs.cloudModeLabel.textContent='雲端待登入';
+  refs.cloudHint.textContent=message || 'Firebase 已設定，請用教師 Google 帳號登入。';
+  refs.storageStatus.textContent='▣ 未登入時先儲存在本機';
+}
+async function initCloud(){
+  updateCloudUi();
+  if(!cloud.configured){
+    if(cloud.parentShareId) updateCloudUi('Firebase 尚未設定，無法讀取家長分享頁。');
+    return;
+  }
+  try{
+    const appMod=await import(`https://www.gstatic.com/firebasejs/${FIREBASE_CDN_VERSION}/firebase-app.js`);
+    const authMod=await import(`https://www.gstatic.com/firebasejs/${FIREBASE_CDN_VERSION}/firebase-auth.js`);
+    const dbMod=await import(`https://www.gstatic.com/firebasejs/${FIREBASE_CDN_VERSION}/firebase-firestore.js`);
+    const app=appMod.initializeApp(firebaseConfig);
+    cloud.auth=authMod.getAuth(app);
+    cloud.db=dbMod.getFirestore(app);
+    cloud.provider=new authMod.GoogleAuthProvider();
+    cloud.api={...authMod,...dbMod};
+    if(cloud.parentShareId){
+      await loadParentShare();
+      return;
+    }
+    cloud.api.onAuthStateChanged(cloud.auth,user=>{
+      cloud.user=user;
+      if(user) subscribeTeacherData();
+      else {
+        if(cloud.unsubscribe) cloud.unsubscribe();
+        cloud.unsubscribe=null;
+        updateCloudUi();
+      }
+    });
+  }catch(err){
+    console.error(err);
+    updateCloudUi('Firebase 載入失敗，先使用本機模式。');
+  }
+}
+function teacherDocRef(){
+  return cloud.api.doc(cloud.db,'teachers',cloud.user.uid,'classes',getClassId());
+}
+function publicShareDocRef(shareId=getShareId()){
+  return cloud.api.doc(cloud.db,'publicShares',shareId);
+}
+function serializeTeacherState(){
+  return {
+    students:state.students,
+    books:state.books,
+    attendance:state.attendance,
+    settings:state.settings,
+    className:getClassName(),
+    updatedAt:cloud.api.serverTimestamp()
+  };
+}
+function serializePublicShare(){
+  return {
+    ownerUid:cloud.user.uid,
+    classId:getClassId(),
+    className:getClassName(),
+    sharedDate:selectedDate,
+    books:{[selectedDate]:state.books[selectedDate] || {homework:'',reminder:'',test:'',note:'',teacher:''}},
+    attendance:{[selectedDate]:state.attendance[selectedDate] || {}},
+    students:state.students.map(st=>({seat:st.seat,name:`${st.seat}號`})),
+    settings:{
+      writingMode:state.settings.writingMode,
+      fontScale:state.settings.fontScale,
+      fontFamily:state.settings.fontFamily,
+      textAlign:state.settings.textAlign
+    },
+    updatedAt:cloud.api.serverTimestamp()
+  };
+}
+function applyStateFromCloud(nextState){
+  isApplyingRemoteState=true;
+  state=normalizeState(nextState);
+  ensureDay(selectedDate);
+  localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+  refs.lateTime.value=state.settings.lateTime;
+  refs.fontFamilySelect.value=state.settings.fontFamily || 'default';
+  updateLateTimeDisplay();
+  applyLayout();
+  renderAll();
+  refs.lastSaved.textContent='最後同步：'+nowTime();
+  isApplyingRemoteState=false;
+}
+async function subscribeTeacherData(){
+  updateCloudUi('正在同步教師雲端資料...');
+  if(cloud.unsubscribe) cloud.unsubscribe();
+  const ref=teacherDocRef();
+  const snap=await cloud.api.getDoc(ref);
+  if(!snap.exists()){
+    await cloud.api.setDoc(ref,serializeTeacherState(),{merge:true});
+    updateCloudUi('已建立教師雲端資料，並上傳目前本機內容。');
+  }
+  cloud.unsubscribe=cloud.api.onSnapshot(ref,docSnap=>{
+    if(docSnap.exists()) applyStateFromCloud(docSnap.data());
+    updateCloudUi('雲端資料已同步。');
+  },err=>{
+    console.error(err);
+    updateCloudUi('雲端同步暫時失敗，仍保留本機資料。');
+  });
+}
+function queueCloudSave(){
+  if(!cloud.user || !cloud.api || !cloud.db) return;
+  clearTimeout(cloudSaveTimer);
+  cloudSaveTimer=setTimeout(async()=>{
+    try{
+      await cloud.api.setDoc(teacherDocRef(),serializeTeacherState(),{merge:true});
+      updateCloudUi('已同步到教師雲端：'+nowTime());
+    }catch(err){
+      console.error(err);
+      updateCloudUi('雲端儲存失敗，已先保留在本機。');
+    }
+  },650);
+}
+async function signInTeacher(){
+  if(!cloud.configured){ showInfo('Firebase 尚未設定','<p>請先在 firebase-config.js 填入 Firebase 專案設定，再重新開啟此頁。</p>'); return; }
+  if(!cloud.auth || !cloud.provider){ updateCloudUi('Firebase 正在載入，請稍候再試。'); return; }
+  try{ await cloud.api.signInWithPopup(cloud.auth,cloud.provider); }
+  catch(err){ console.error(err); updateCloudUi('登入取消或失敗，資料仍保留在本機。'); }
+}
+async function signOutTeacher(){
+  if(!cloud.auth) return;
+  await cloud.api.signOut(cloud.auth);
+}
+async function publishParentShare(){
+  if(!cloud.user){ showInfo('尚未登入','<p>請先用教師 Google 帳號登入，再更新家長分享。</p>'); return; }
+  try{
+    await cloud.api.setDoc(publicShareDocRef(),serializePublicShare(),{merge:true});
+    await copyParentShareLink(false);
+    showInfo('家長分享已更新',`<p>家長連結已複製，可傳給家長：</p><p><b>${escapeHtml(parentShareLink())}</b></p><p>家長可看到聯絡簿與座號簽到狀態，但看不到學生姓名，也不能修改簽到。</p>`);
+  }catch(err){
+    console.error(err);
+    showInfo('分享失敗','<p>無法更新家長分享，請確認 Firestore 規則已發布，且目前已登入教師帳號。</p>');
+  }
+}
+function parentShareLink(){
+  const url=new URL(location.href);
+  url.searchParams.set('share',getShareId());
+  return url.toString();
+}
+async function copyParentShareLink(showMessage=true){
+  const link=parentShareLink();
+  try{ await navigator.clipboard.writeText(link); if(showMessage) updateCloudUi('家長分享連結已複製。'); }
+  catch(e){ if(showMessage) showInfo('家長分享連結',`<p>${escapeHtml(link)}</p>`); }
+}
+async function loadParentShare(){
+  updateCloudUi('正在讀取家長分享聯絡簿...');
+  try{
+    const snap=await cloud.api.getDoc(publicShareDocRef(cloud.parentShareId));
+    if(!snap.exists()){ updateCloudUi('找不到這個分享連結，請向老師確認連結是否正確。'); return; }
+    const data=snap.data();
+    selectedDate=data.sharedDate || Object.keys(data.books||{}).sort().pop() || selectedDate;
+    refs.datePicker.value=selectedDate;
+    state=normalizeState({
+      students:data.students || defaultStudents,
+      books:data.books || {},
+      attendance:data.attendance || {},
+      settings:{...state.settings,...(data.settings||{})}
+    });
+    ensureDay(selectedDate);
+    refs.lunarText.textContent=data.className || getClassName();
+    renderAll();
+    updateCloudUi('已載入老師分享的聯絡簿。');
+  }catch(err){
+    console.error(err);
+    updateCloudUi('讀取分享資料失敗，請稍後再試。');
+  }
+}
 function renderAttendance(){
   ensureDay(selectedDate); const rec=state.attendance[selectedDate]; refs.studentGrid.innerHTML=''; let on=0,late=0,leave=0;
   state.students.forEach(st=>{ const r=rec[st.seat]; if(r?.status==='ontime') on++; if(r?.status==='late') late++; if(r?.status==='leave') leave++;
-    const btn=document.createElement('button'); btn.className='student-btn '+(r?.status||'absent'); btn.innerHTML=`<div class="seat">${st.seat}</div>`; btn.onclick=()=>studentClick(st.seat); refs.studentGrid.appendChild(btn); });
+    const btn=document.createElement('button'); btn.className='student-btn '+(r?.status||'absent'); btn.innerHTML=`<div class="seat">${st.seat}</div>`; if(!cloud.parentShareId) btn.onclick=()=>studentClick(st.seat); refs.studentGrid.appendChild(btn); });
   refs.arrivedCount.textContent=on+late; refs.lateCount.textContent=late; refs.leaveCount.textContent=leave; refs.absentCount.textContent=state.students.length-on-late-leave;
 }
 function statusText(r){ if(!r)return'未到'; if(r.status==='ontime')return r.time||'準時'; if(r.status==='late')return r.time||'遲到'; if(r.status==='leave')return'請假'; return'未到'; }

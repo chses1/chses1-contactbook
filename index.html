@@ -8,6 +8,19 @@
 </head>
 <body>
   <div class="app-shell">
+    <section class="cloud-bar">
+      <div class="cloud-copy">
+        <strong id="cloudModeLabel">本機模式</strong>
+        <span id="cloudHint">尚未連接 Firebase，資料會先存在這台電腦。</span>
+      </div>
+      <div class="cloud-actions">
+        <button id="signInBtn" class="cloud-btn primary">教師 Google 登入</button>
+        <button id="publishShareBtn" class="cloud-btn">更新家長分享</button>
+        <button id="copyShareBtn" class="cloud-btn">複製家長連結</button>
+        <button id="signOutBtn" class="cloud-btn ghost">登出</button>
+      </div>
+    </section>
+
     <header class="hero-clock">
       <section class="clock-block">
         <div class="clock-card">
@@ -168,8 +181,8 @@
     </main>
 
     <footer class="footer-bar">
-      <span>▣ 資料已自動儲存於本機</span>
-      <span>版本：4.0.0</span>
+      <span id="storageStatus">▣ 資料已自動儲存於本機</span>
+      <span>版本：4.1.0 雲端準備版</span>
       <span id="lastSaved">最後儲存：--:--:--</span>
     </footer>
   </div>
@@ -208,6 +221,7 @@
     <div id="infoContent" class="modal-body"></div>
   </dialog>
 
+  <script src="firebase-config.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

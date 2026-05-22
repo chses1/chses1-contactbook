@@ -1,0 +1,48 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isTeacher(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    match /teachers/{uid}/classes/{classId} {
+      allow read, write: if isTeacher(uid);
+    }
+
+    match /publicShares/{shareId} {
+      allow read: if true;
+      allow create: if signedIn()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+          'ownerUid',
+          'classId',
+          'className',
+          'sharedDate',
+          'books',
+          'attendance',
+          'students',
+          'settings',
+          'updatedAt'
+        ]);
+      allow update: if signedIn()
+        && resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerUid == resource.data.ownerUid
+        && request.resource.data.keys().hasOnly([
+          'ownerUid',
+          'classId',
+          'className',
+          'sharedDate',
+          'books',
+          'attendance',
+          'students',
+          'settings',
+          'updatedAt'
+        ]);
+    }
+  }
+}
