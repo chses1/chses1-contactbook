@@ -133,11 +133,18 @@
         </div>
 
         <div id="editor" class="editor hidden">
-          <label>今日功課<textarea id="homeworkInput" rows="4"></textarea></label>
-          <label>明日提醒<textarea id="reminderInput" rows="3"></textarea></label>
-          <label>考試通知<textarea id="testInput" rows="3"></textarea></label>
-          <label>生活叮嚀<textarea id="noteInput" rows="3"></textarea></label>
-          <label>老師的話<textarea id="teacherInput" rows="3"></textarea></label>
+          <div id="bookFieldToggles" class="book-field-toggles" aria-label="聯絡簿顯示項目">
+            <label><input id="homeworkToggle" type="checkbox" data-book-field="homework" />今日功課</label>
+            <label><input id="reminderToggle" type="checkbox" data-book-field="reminder" />明日提醒</label>
+            <label><input id="testToggle" type="checkbox" data-book-field="test" />考試通知</label>
+            <label><input id="noteToggle" type="checkbox" data-book-field="note" />生活叮嚀</label>
+            <label><input id="teacherToggle" type="checkbox" data-book-field="teacher" />老師的話</label>
+          </div>
+          <div class="editor-field" data-book-field-panel="homework"><label for="homeworkInput">今日功課</label><textarea id="homeworkInput" rows="5"></textarea></div>
+          <div class="editor-field" data-book-field-panel="reminder"><label for="reminderInput">明日提醒</label><textarea id="reminderInput" rows="1"></textarea></div>
+          <div class="editor-field" data-book-field-panel="test"><label for="testInput">考試通知</label><textarea id="testInput" rows="1"></textarea></div>
+          <div class="editor-field" data-book-field-panel="note"><label for="noteInput">生活叮嚀</label><textarea id="noteInput" rows="1"></textarea></div>
+          <div class="editor-field" data-book-field-panel="teacher"><label for="teacherInput">老師的話</label><textarea id="teacherInput" rows="1"></textarea></div>
           <div class="editor-actions">
             <button id="copyYesterdayBtn" class="outline-btn">貼上昨天的作業</button>
             <button id="saveBookBtn" class="primary-btn">儲存</button>

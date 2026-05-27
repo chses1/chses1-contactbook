@@ -350,3 +350,19 @@
   .top-buttons{grid-template-columns:repeat(2,1fr)}
   .contact-panel.editing .editor{grid-template-columns:1fr}
 }
+
+/* contact book field switches */
+.editor{grid-template-columns:1fr}
+.book-field-toggles{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px;border:1px solid #dbe7f5;border-radius:12px;background:#f8fbff}
+.book-field-toggles label{display:inline-flex;flex-direction:row;align-items:center;gap:6px;min-height:38px;padding:7px 10px;border:1px solid #cbd9eb;border-radius:10px;background:#fff;color:#17315c;font-size:15px;font-weight:950;white-space:nowrap}
+.book-field-toggles input{width:18px;height:18px;accent-color:#1167df}
+.contact-panel.editing .editor{grid-template-columns:1fr;grid-auto-rows:auto;overflow-y:auto;align-content:start;padding:0 4px 18px 0;scrollbar-gutter:stable}
+.contact-panel.editing .editor label{display:flex;flex-direction:column;min-width:0;min-height:0}
+.contact-panel.editing .book-field-toggles label{display:inline-flex;flex-direction:row}
+.contact-panel.editing .editor-field{display:grid;grid-template-rows:auto auto;gap:6px;min-width:0;height:auto;line-height:1.25}
+.contact-panel.editing .editor-field label{display:block;font-weight:900;color:#17315c;min-height:0}
+.contact-panel.editing .editor textarea{display:block;flex:0 0 auto;height:calc(1.6em + 28px);min-height:48px;max-height:none;margin-top:0;overflow:auto}
+.contact-panel.editing .editor [data-book-field-panel="homework"] textarea{height:calc(8em + 28px);min-height:132px}
+.contact-panel.editing .editor-actions{position:sticky;bottom:0;z-index:2;display:grid;grid-template-columns:1fr 1fr;align-self:stretch;height:66px;min-height:66px;gap:12px;padding-top:8px;background:#fff}
+.contact-panel.editing .editor-actions button{width:100%;height:58px;font-size:20px;border-radius:12px}
+.contact-panel.editing #autosaveHint{display:none}

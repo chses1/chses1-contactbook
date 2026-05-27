@@ -10,6 +10,13 @@ const FONT_STACKS = {
   kai:'"BiauKai","DFKai-SB","標楷體","KaiTi","Noto Serif TC",serif',
   iansui:'"Bpmf Iansui","Noto Sans TC","Microsoft JhengHei",sans-serif'
 };
+const BOOK_FIELDS = [
+  ['homework','今日功課'],
+  ['reminder','明日提醒'],
+  ['test','考試通知'],
+  ['note','生活叮嚀'],
+  ['teacher','老師的話']
+];
 const defaultStudents = Array.from({length:30},(_,i)=>({seat:String(i+1).padStart(2,'0'),name:`${i+1}號`}));
 const $ = id => document.getElementById(id);
 const refs = {
@@ -19,6 +26,7 @@ const refs = {
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
   homeworkCard:$('homeworkCard'),reminderCard:$('reminderCard'),testCard:$('testCard'),noteCard:$('noteCard'),teacherCard:$('teacherCard'),emptyBookMessage:$('emptyBookMessage'),
   homeworkView:$('homeworkView'),reminderView:$('reminderView'),testView:$('testView'),noteView:$('noteView'),teacherView:$('teacherView'),
+  bookFieldToggles:$('bookFieldToggles'),homeworkToggle:$('homeworkToggle'),reminderToggle:$('reminderToggle'),testToggle:$('testToggle'),noteToggle:$('noteToggle'),teacherToggle:$('teacherToggle'),
   homeworkInput:$('homeworkInput'),reminderInput:$('reminderInput'),testInput:$('testInput'),noteInput:$('noteInput'),teacherInput:$('teacherInput'),saveBookBtn:$('saveBookBtn'),copyYesterdayBtn:$('copyYesterdayBtn'),autosaveHint:$('autosaveHint'),
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
   statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),resetBtn:$('resetBtn'),exportBtn:$('exportBtn'),lastSaved:$('lastSaved'),
@@ -53,6 +61,7 @@ function normalizeState(s={}){
   return {
     students:Array.isArray(s.students) && s.students.length ? s.students : defaultStudents,
     books:s.books || {},
+    bookFields:s.bookFields || {},
     attendance:s.attendance || {},
     settings:{
       lateTime:s.settings?.lateTime || '07:50',
@@ -75,7 +84,17 @@ function save(){
   refs.lastSaved.textContent='最後儲存：'+nowTime();
   if(!isApplyingRemoteState) queueCloudSave();
 }
-function ensureDay(key){ if(!state.attendance[key]) state.attendance[key]={}; if(!state.books[key]) state.books[key]={homework:'',reminder:'',test:'',note:'',teacher:''}; }
+function defaultBookFields(){ return Object.fromEntries(BOOK_FIELDS.map(([key])=>[key,key==='homework'])); }
+function ensureDay(key){
+  if(!state.attendance[key]) state.attendance[key]={};
+  if(!state.books[key]) state.books[key]={homework:'',reminder:'',test:'',note:'',teacher:''};
+  if(!state.bookFields) state.bookFields={};
+  if(!state.bookFields[key]) state.bookFields[key]=defaultBookFields();
+}
+function getEnabledBookFields(key=selectedDate){
+  ensureDay(key);
+  return {...defaultBookFields(),...(state.bookFields[key]||{})};
+}
 function init(){
   if(state.settings.fontFamily==='bopomofo') state.settings.fontFamily='iansui';
   refs.datePicker.value=selectedDate; refs.lateTime.value=state.settings.lateTime; refs.fontFamilySelect.value=state.settings.fontFamily||'default'; ensureDay(selectedDate);
@@ -199,8 +218,16 @@ function wireEvents(){
 
   refs.editBtn.onclick=()=>{ editMode=!editMode; renderBook(); };
   refs.saveBookBtn.onclick=()=>{ writeBookFromInputs(); editMode=false; renderBook(); save(); };
+  refs.bookFieldToggles?.querySelectorAll('input[data-book-field]').forEach(toggle=>{
+    toggle.addEventListener('change',()=>{
+      ensureDay(selectedDate);
+      state.bookFields[selectedDate]={...getEnabledBookFields(),[toggle.dataset.bookField]:toggle.checked};
+      renderBook();
+      save();
+    });
+  });
   [refs.homeworkInput,refs.reminderInput,refs.testInput,refs.noteInput,refs.teacherInput].forEach(t=>t.addEventListener('input',()=>{writeBookFromInputs(); save(); refs.autosaveHint.textContent='已自動儲存：'+nowTime();}));
-  refs.copyYesterdayBtn.onclick=()=>{ const d=new Date(selectedDate+'T00:00:00'); d.setDate(d.getDate()-1); const y=dateKey(d); if(state.books[y]){ state.books[selectedDate]={...state.books[y]}; renderBook(); save(); } else alert('前一天沒有聯絡簿內容'); };
+  refs.copyYesterdayBtn.onclick=()=>{ const d=new Date(selectedDate+'T00:00:00'); d.setDate(d.getDate()-1); const y=dateKey(d); if(state.books[y]){ ensureDay(selectedDate); state.books[selectedDate]={...state.books[selectedDate],homework:state.books[y].homework||''}; renderBook(); save(); } else alert('前一天沒有聯絡簿內容'); };
   refs.writingModeBtn.onclick=()=>{ state.settings.writingMode='horizontal'; renderBook(); save(); };
   refs.viewModeBtn.onclick=()=>{ state.settings.writingMode='vertical'; renderBook(); save(); };
   refs.namesBtn.onclick=openNames;
@@ -255,12 +282,19 @@ function formatInlineText(text){
 }
 function renderBook(){
   ensureDay(selectedDate); const b=state.books[selectedDate]||{};
+  const enabled=getEnabledBookFields();
   refs.bookDisplay.closest('.contact-panel')?.classList.toggle('editing',editMode);
   applyBookAlign();
   refs.bookDisplay.classList.toggle('vertical-mode',state.settings.writingMode==='vertical'); refs.bookDisplay.classList.toggle('horizontal-mode',state.settings.writingMode!=='vertical');
   refs.writingModeBtn.textContent='橫書'; refs.viewModeBtn.textContent='直書';
-  const items=[['homework',refs.homeworkCard,refs.homeworkView,refs.homeworkInput],['test',refs.testCard,refs.testView,refs.testInput],['reminder',refs.reminderCard,refs.reminderView,refs.reminderInput],['note',refs.noteCard,refs.noteView,refs.noteInput],['teacher',refs.teacherCard,refs.teacherView,refs.teacherInput]];
-  let any=false, visibleCount=0, nextNo=1; items.forEach(([k,card,view,input],order)=>{ const val=(b[k]||'').trim(); const lines=getBookLines(val); const weight=Math.max(1,lines.length); view.innerHTML=formatBookText(lines,nextNo); input.value=b[k]||''; card.style.order=order; card.style.setProperty('--card-weight',weight); card.dataset.lineCount=lines.length; card.style.display=lines.length?'':'none'; if(lines.length){ any=true; visibleCount++; nextNo+=lines.length; } });
+  const items=BOOK_FIELDS.map(([key])=>[key,refs[key+'Card'],refs[key+'View'],refs[key+'Input']]);
+  refs.bookFieldToggles?.querySelectorAll('input[data-book-field]').forEach(toggle=>{
+    toggle.checked=!!enabled[toggle.dataset.bookField];
+  });
+  refs.editor?.querySelectorAll('[data-book-field-panel]').forEach(panel=>{
+    panel.classList.toggle('hidden',!enabled[panel.dataset.bookFieldPanel]);
+  });
+  let any=false, visibleCount=0, nextNo=1; items.forEach(([k,card,view,input],order)=>{ const val=(b[k]||'').trim(); const lines=getBookLines(val); const weight=Math.max(1,lines.length); view.innerHTML=formatBookText(lines,nextNo); input.value=b[k]||''; card.style.order=order; card.style.setProperty('--card-weight',weight); card.dataset.lineCount=lines.length; card.style.display=enabled[k]&&lines.length?'':'none'; if(enabled[k]&&lines.length){ any=true; visibleCount++; nextNo+=lines.length; } });
   refs.bookDisplay.dataset.visibleCount=visibleCount;
   refs.emptyBookMessage.style.display= any ? 'none':'grid'; refs.editor.classList.toggle('hidden',!editMode); refs.bookDisplay.classList.toggle('hidden',editMode); refs.editBtn.textContent=editMode?'返回':'編輯'; fitBookTextSoon();
 }
@@ -294,7 +328,11 @@ function fitBookText(){
     title.style.fontSize=Math.min(best*.78,34*scale)+'px';
   });
 }
-function writeBookFromInputs(){ state.books[selectedDate]={homework:refs.homeworkInput.value,reminder:refs.reminderInput.value,test:refs.testInput.value,note:refs.noteInput.value,teacher:refs.teacherInput.value}; }
+function writeBookFromInputs(){ state.books[selectedDate]={...(state.books[selectedDate]||{}),homework:refs.homeworkInput.value,reminder:refs.reminderInput.value,test:refs.testInput.value,note:refs.noteInput.value,teacher:refs.teacherInput.value}; }
+function teacherWelcomeHint(){
+  const name=String(cloud.user?.displayName || cloud.user?.email?.split('@')[0] || '教師').trim();
+  return `歡迎${name}老師登入，點擊日期可以預先編輯之後的功課。`;
+}
 function updateCloudUi(message){
   const shareMode=!!cloud.parentShareId;
   document.body.classList.toggle('parent-share-mode',shareMode);
@@ -311,18 +349,18 @@ function updateCloudUi(message){
   }
   if(!cloud.configured){
     refs.cloudModeLabel.textContent='本機模式';
-    refs.cloudHint.textContent='請先填寫 firebase-config.js，資料目前只存在這台電腦。';
+    refs.cloudHint.textContent='本系統可以單機使用亦可登入 Google 帳號。';
     refs.storageStatus.textContent='▣ 資料已自動儲存於本機';
     return;
   }
   if(cloud.user){
     refs.cloudModeLabel.textContent='教師雲端同步';
-    refs.cloudHint.textContent=message || `已登入：${cloud.user.displayName || cloud.user.email || '教師帳號'}`;
+    refs.cloudHint.textContent=message && !/同步|教師雲端資料/.test(message) ? message : teacherWelcomeHint();
     refs.storageStatus.textContent='▣ 資料已儲存在本機並同步到教師雲端';
     return;
   }
   refs.cloudModeLabel.textContent='雲端待登入';
-  refs.cloudHint.textContent=message || 'Firebase 已設定，請用教師 Google 帳號登入。';
+  refs.cloudHint.textContent=message || '本系統可以單機使用亦可登入 Google 帳號。';
   refs.storageStatus.textContent='▣ 未登入時先儲存在本機';
 }
 async function initCloud(){
@@ -368,6 +406,7 @@ function serializeTeacherState(){
   return {
     students:state.students,
     books:state.books,
+    bookFields:state.bookFields || {},
     attendance:state.attendance,
     settings:state.settings,
     className:getClassName(),
@@ -383,6 +422,7 @@ function serializePublicShare(){
     sharedDate:selectedDate,
     shareAttendance,
     books:{[selectedDate]:state.books[selectedDate] || {homework:'',reminder:'',test:'',note:'',teacher:''}},
+    bookFields:{[selectedDate]:getEnabledBookFields()},
     attendance:shareAttendance ? {[selectedDate]:state.attendance[selectedDate] || {}} : {},
     students:shareAttendance ? state.students.map(st=>({seat:st.seat,name:`${st.seat}號`})) : [],
     settings:{
@@ -481,6 +521,7 @@ async function loadParentShare(){
     state=normalizeState({
       students:data.students || defaultStudents,
       books:data.books || {},
+      bookFields:data.bookFields || {},
       attendance:data.attendance || {},
       settings:{...state.settings,...(data.settings||{})}
     });
