@@ -605,6 +605,33 @@ function studentsToText(){ return state.students.map(s=>`${s.seat},${s.name}`).j
 function openNames(){ refs.namesInput.value=studentsToText(); refs.namesDialog.showModal(); }
 function toHalfWidth(text){ return String(text||'').replace(/[０-９]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0xFEE0)).replace(/[，、]/g,','); }
 function normalizeStudentName(text){ return String(text||'').replace(/[^\u3400-\u9fffA-Za-z·．・‧]/g,'').trim(); }
+function rosterCells(line){
+  const text=toHalfWidth(line).trim();
+  if(!text) return [];
+  return text.includes('\t') ? text.split('\t').map(x=>x.trim()).filter(Boolean) : text.split(/\s+/).map(x=>x.trim()).filter(Boolean);
+}
+function parseRosterTableRows(lines){
+  const list=[];
+  let unmatched=0;
+  for(let i=0;i<lines.length;i++){
+    const cells=rosterCells(lines[i]);
+    const label=normalizeStudentName(cells[0]||'');
+    if(label!=='號' && label!=='座號') continue;
+    const nextCells=rosterCells(lines[i+1]||'');
+    const nextLabel=normalizeStudentName(nextCells[0]||'');
+    if(nextLabel!=='姓名') continue;
+    const seats=cells.slice(1).map(x=>Number(x.match(/\d{1,2}/)?.[0])).filter(n=>n>=1&&n<=99);
+    const names=nextCells.slice(1).map(normalizeStudentName).filter(Boolean);
+    const count=Math.min(seats.length,names.length,60-list.length);
+    for(let j=0;j<count;j++){
+      const seat=String(seats[j]).padStart(2,'0');
+      if(!list.some(st=>st.seat===seat)) list.push({seat,name:names[j]});
+    }
+    unmatched+=Math.abs(seats.length-names.length);
+    i++;
+  }
+  return {list:list.slice(0,60),unmatched};
+}
 function parseCommaRoster(text){
   const list=[];
   toHalfWidth(text).split('\n').map(x=>x.trim()).filter(Boolean).forEach(line=>{
@@ -619,6 +646,8 @@ function parseCommaRoster(text){
 function parseTeacherManualRoster(text){
   const raw=toHalfWidth(text).replace(/\r/g,'\n');
   const lines=raw.split('\n').map(line=>line.trim()).filter(Boolean);
+  const tableRows=parseRosterTableRows(lines);
+  if(tableRows.list.length) return tableRows;
   const stopWords=new Set(['號','姓名','姓','名','座號','班級','學生','導師','老師','男生','女生','共','人']);
   const seats=[];
   const names=[];
