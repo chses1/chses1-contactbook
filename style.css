@@ -370,12 +370,18 @@
 /* space-saving controls */
 .settings-cloud-bar{margin:0;box-shadow:none}
 .settings-body{padding:18px 22px;display:grid;gap:14px}
-.settings-status{display:flex;flex-wrap:wrap;gap:12px 22px;padding:12px 14px;border-radius:12px;background:#f8fbff;border:1px solid #dbe7f5;color:#415675;font-size:15px;font-weight:850}
-.settings-note{color:#415675;font-weight:750;line-height:1.55}
-.settings-note p{margin:6px 0}
-.contact-panel .head-actions{grid-template-columns:158px 64px 64px 64px 64px}
+.contact-panel .head-actions{grid-template-columns:158px 82px 82px}
+.contact-panel .head-actions #editBtn,.contact-panel .head-actions #formatBtn{width:82px}
 .contact-panel #formatBtn.active{background:#1167df;color:#fff}
-.contact-panel .font-toolbar{margin-top:8px}
+.contact-panel .font-toolbar{margin-top:8px;justify-content:flex-start}
+.contact-panel .font-toolbar #writingModeBtn,.contact-panel .font-toolbar #viewModeBtn{width:64px;height:40px;padding:0;font-size:16px;line-height:1}
+.contact-panel .font-toolbar #writingModeBtn.active,.contact-panel .font-toolbar #viewModeBtn.active{background:#1167df;color:#fff;border-color:#1167df}
+.settings-body{padding:18px 22px 22px}
+.settings-cloud-bar{display:block;padding:0;border:0;background:transparent;box-shadow:none}
+.settings-cloud-bar .cloud-actions{display:grid;grid-template-columns:1fr;gap:10px;justify-content:stretch}
+.settings-cloud-bar .cloud-btn,.settings-cloud-bar .share-attendance-toggle{width:100%;min-height:46px;justify-content:center;font-size:16px}
+.summary-card.ontime{color:#11884a;background:#dcfce7;border-color:#18a957}
+.student-btn.ontime::after,.dot.green{background:#18a957}
 .date-full{font-size:clamp(18px,calc(22px * var(--hero-scale)),24px);white-space:normal;text-align:center}
 .week-text{font-size:clamp(32px,calc(44px * var(--hero-scale)),48px)}
 .lunar-pill{max-width:100%;overflow:hidden;text-overflow:ellipsis}
@@ -385,7 +391,7 @@
 
 @media(max-width:1320px){
   .contact-panel .head-actions{
-    grid-template-columns:minmax(138px,1.6fr) repeat(4,minmax(52px,1fr));
+    grid-template-columns:minmax(138px,1.6fr) repeat(2,minmax(72px,1fr));
     width:100%;
   }
   .contact-panel .head-actions input[type=date],.contact-panel .head-actions button{width:100%}
@@ -418,8 +424,7 @@
 
 @media(max-width:900px){
   .settings-cloud-bar{align-items:stretch}
-  .settings-status{font-size:14px}
-  .contact-panel .head-actions{grid-template-columns:1fr 1fr;align-self:stretch}
+  .contact-panel .head-actions{grid-template-columns:1fr 1fr 1fr;align-self:stretch}
   .contact-panel .head-actions input[type=date],.contact-panel .head-actions button{width:100%}
 }
 

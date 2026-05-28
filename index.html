@@ -36,7 +36,7 @@
         <div id="timeStatus" class="arrival-status">準時時段 ✅</div>
       </section>
       <section class="top-buttons">
-        <button id="calendarBtn" class="icon-btn blue">▣<span>行事曆</span></button>
+        <button id="calendarBtn" class="icon-btn blue">▣<span>中山行事曆</span></button>
         <button id="swapPanelsBtn" class="icon-btn teal">⇄<span>左右對調</span></button>
         <button id="settingsBtn" class="icon-btn purple">⚙<span>系統設定</span></button>
         <button id="fullscreenBtn" class="icon-btn dark">⛶<span>全螢幕</span></button>
@@ -54,13 +54,13 @@
           <div class="head-actions">
             <input id="datePicker" type="date" />
             <button id="editBtn" class="primary-btn">編輯聯絡簿</button>
-            <button id="writingModeBtn" class="outline-btn">橫書顯示</button>
-            <button id="viewModeBtn" class="ghost-btn">直書顯示</button>
             <button id="formatBtn" class="ghost-btn">格式</button>
           </div>
         </div>
 
         <div id="formatPanel" class="font-toolbar hidden">
+          <button id="writingModeBtn" class="outline-btn">橫書</button>
+          <button id="viewModeBtn" class="ghost-btn">直書</button>
           <button id="fontDownBtn" class="font-btn">A−</button>
           <strong id="fontScaleLabel">100%</strong>
           <button id="fontUpBtn" class="font-btn">A+</button>
@@ -77,7 +77,6 @@
               <option value="iansui">芫荽注音字體</option>
             </select>
           </label>
-          <button id="fontResetBtn" class="ghost-btn small-btn">重設</button>
         </div>
 
         <div id="bookDisplay" class="book-display horizontal-mode">
@@ -219,10 +218,6 @@
     </div>
     <div class="settings-body">
       <section class="cloud-bar settings-cloud-bar">
-        <div class="cloud-copy">
-          <strong id="cloudModeLabel">本機模式</strong>
-          <span id="cloudHint">尚未連接 Firebase，資料會先存在這台電腦。</span>
-        </div>
         <div class="cloud-actions">
           <button id="signInBtn" class="cloud-btn primary">教師 Google 登入</button>
           <label class="share-attendance-toggle"><input id="shareAttendanceToggle" type="checkbox" /> 分享學生出席</label>
@@ -231,14 +226,6 @@
           <button id="signOutBtn" class="cloud-btn ghost">登出</button>
         </div>
       </section>
-      <div class="settings-status">
-        <span id="storageStatus">▣ 資料已自動儲存於本機</span>
-        <span id="lastSaved">最後儲存：--:--:--</span>
-      </div>
-      <div class="settings-note">
-        <p>到校準時時間：<b id="settingsLateTime">07:50</b></p>
-        <p>Firebase 尚未設定或未登入時，資料仍會存在這台電腦的瀏覽器。</p>
-      </div>
     </div>
   </dialog>
 

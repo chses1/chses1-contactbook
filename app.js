@@ -22,7 +22,7 @@ const $ = id => document.getElementById(id);
 const refs = {
   cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
-  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontResetBtn:$('fontResetBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
+  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
   homeworkCard:$('homeworkCard'),reminderCard:$('reminderCard'),testCard:$('testCard'),noteCard:$('noteCard'),teacherCard:$('teacherCard'),emptyBookMessage:$('emptyBookMessage'),
   homeworkView:$('homeworkView'),reminderView:$('reminderView'),testView:$('testView'),noteView:$('noteView'),teacherView:$('teacherView'),
@@ -31,7 +31,7 @@ const refs = {
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
   statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),resetBtn:$('resetBtn'),exportBtn:$('exportBtn'),lastSaved:$('lastSaved'),
   studentDialog:$('studentDialog'),studentTitle:$('studentTitle'),studentDetail:$('studentDetail'),markOnTimeBtn:$('markOnTimeBtn'),markLateBtn:$('markLateBtn'),markLeaveBtn:$('markLeaveBtn'),markAbsentBtn:$('markAbsentBtn'),
-  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),settingsDialog:$('settingsDialog'),settingsLateTime:$('settingsLateTime')
+  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),settingsDialog:$('settingsDialog')
 };
 let state = loadState();
 let selectedDate = dateKey(new Date());
@@ -81,7 +81,7 @@ function loadState(){
 }
 function save(){
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
-  refs.lastSaved.textContent='最後儲存：'+nowTime();
+  if(refs.lastSaved) refs.lastSaved.textContent='最後儲存：'+nowTime();
   if(!isApplyingRemoteState) queueCloudSave();
 }
 function defaultBookFields(){ return Object.fromEntries(BOOK_FIELDS.map(([key])=>[key,key==='homework'])); }
@@ -110,7 +110,6 @@ function updateLateTimeDisplay(){
   refs.lateMinute.textContent=m;
   if(refs.lateLegendOnTime) refs.lateLegendOnTime.textContent=value;
   if(refs.lateLegendLate) refs.lateLegendLate.textContent=value;
-  if(refs.settingsLateTime) refs.settingsLateTime.textContent=value;
 }
 function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
 function getLayout(){ if(!state.settings.layout) state.settings.layout={}; return state.settings.layout; }
@@ -234,7 +233,6 @@ function wireEvents(){
   refs.alignCenterBtn.onclick=()=>setBookAlign('center');
   refs.alignRightBtn.onclick=()=>setBookAlign('right');
   refs.fontFamilySelect.onchange=()=>{ state.settings.fontFamily=refs.fontFamilySelect.value; applyFontScale(); fitBookTextSoon(); save(); };
-  refs.fontResetBtn.onclick=()=>{ state.settings.fontScale=1; state.settings.fontFamily='default'; refs.fontFamilySelect.value='default'; applyFontScale(); fitBookTextSoon(); save(); };
   refs.formatBtn.onclick=()=>toggleFormatPanel();
 
   refs.editBtn.onclick=()=>{ editMode=!editMode; renderBook(); };
@@ -314,6 +312,10 @@ function renderBook(){
   applyBookAlign();
   refs.bookDisplay.classList.toggle('vertical-mode',state.settings.writingMode==='vertical'); refs.bookDisplay.classList.toggle('horizontal-mode',state.settings.writingMode!=='vertical');
   refs.writingModeBtn.textContent='橫書'; refs.viewModeBtn.textContent='直書';
+  refs.writingModeBtn.classList.toggle('active',state.settings.writingMode!=='vertical');
+  refs.viewModeBtn.classList.toggle('active',state.settings.writingMode==='vertical');
+  refs.writingModeBtn.setAttribute('aria-pressed',String(state.settings.writingMode!=='vertical'));
+  refs.viewModeBtn.setAttribute('aria-pressed',String(state.settings.writingMode==='vertical'));
   const items=BOOK_FIELDS.map(([key])=>[key,refs[key+'Card'],refs[key+'View'],refs[key+'Input']]);
   refs.bookFieldToggles?.querySelectorAll('input[data-book-field]').forEach(toggle=>{
     toggle.checked=!!enabled[toggle.dataset.bookField];
@@ -369,26 +371,26 @@ function updateCloudUi(message){
   refs.copyShareBtn.disabled=shareMode || !cloud.user;
   if(refs.shareAttendanceToggle) refs.shareAttendanceToggle.disabled=shareMode || !cloud.user;
   if(shareMode){
-    refs.cloudModeLabel.textContent='家長分享模式';
-    refs.cloudHint.textContent=message || '正在讀取老師分享的聯絡簿。';
-    refs.storageStatus.textContent='▣ 家長只讀分享頁';
+    if(refs.cloudModeLabel) refs.cloudModeLabel.textContent='家長分享模式';
+    if(refs.cloudHint) refs.cloudHint.textContent=message || '正在讀取老師分享的聯絡簿。';
+    if(refs.storageStatus) refs.storageStatus.textContent='▣ 家長只讀分享頁';
     return;
   }
   if(!cloud.configured){
-    refs.cloudModeLabel.textContent='本機模式';
-    refs.cloudHint.textContent='本系統可以單機使用亦可登入 Google 帳號。';
-    refs.storageStatus.textContent='▣ 資料已自動儲存於本機';
+    if(refs.cloudModeLabel) refs.cloudModeLabel.textContent='本機模式';
+    if(refs.cloudHint) refs.cloudHint.textContent='本系統可以單機使用亦可登入 Google 帳號。';
+    if(refs.storageStatus) refs.storageStatus.textContent='▣ 資料已自動儲存於本機';
     return;
   }
   if(cloud.user){
-    refs.cloudModeLabel.textContent='教師雲端同步';
-    refs.cloudHint.textContent=message && !/同步|教師雲端資料/.test(message) ? message : teacherWelcomeHint();
-    refs.storageStatus.textContent='▣ 資料已儲存在本機並同步到教師雲端';
+    if(refs.cloudModeLabel) refs.cloudModeLabel.textContent='教師雲端同步';
+    if(refs.cloudHint) refs.cloudHint.textContent=message && !/同步|教師雲端資料/.test(message) ? message : teacherWelcomeHint();
+    if(refs.storageStatus) refs.storageStatus.textContent='▣ 資料已儲存在本機並同步到教師雲端';
     return;
   }
-  refs.cloudModeLabel.textContent='雲端待登入';
-  refs.cloudHint.textContent=message || '本系統可以單機使用亦可登入 Google 帳號。';
-  refs.storageStatus.textContent='▣ 未登入時先儲存在本機';
+  if(refs.cloudModeLabel) refs.cloudModeLabel.textContent='雲端待登入';
+  if(refs.cloudHint) refs.cloudHint.textContent=message || '本系統可以單機使用亦可登入 Google 帳號。';
+  if(refs.storageStatus) refs.storageStatus.textContent='▣ 未登入時先儲存在本機';
 }
 async function initCloud(){
   updateCloudUi();
@@ -471,7 +473,7 @@ function applyStateFromCloud(nextState){
   updateLateTimeDisplay();
   applyLayout();
   renderAll();
-  refs.lastSaved.textContent='最後同步：'+nowTime();
+  if(refs.lastSaved) refs.lastSaved.textContent='最後同步：'+nowTime();
   isApplyingRemoteState=false;
 }
 async function subscribeTeacherData(){
