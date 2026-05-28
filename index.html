@@ -23,7 +23,7 @@
       <section class="date-block">
         <div id="dateFull" class="date-full">----</div>
         <div id="weekText" class="week-text">----</div>
-        <div id="lunarText" class="lunar-pill">中山國小</div>
+        <div id="lunarText" class="lunar-pill">班級聯絡簿</div>
       </section>
       <section class="arrival-card">
         <div class="arrival-title">◷ 遲到時間設定</div>
@@ -36,7 +36,7 @@
         <div id="timeStatus" class="arrival-status">準時時段 ✅</div>
       </section>
       <section class="top-buttons">
-        <button id="calendarBtn" class="icon-btn blue">▣<span>中山行事曆</span></button>
+        <button id="calendarBtn" class="icon-btn blue">▣<span>校行事曆</span></button>
         <button id="swapPanelsBtn" class="icon-btn teal">⇄<span>左右對調</span></button>
         <button id="settingsBtn" class="icon-btn purple">⚙<span>系統設定</span></button>
         <button id="fullscreenBtn" class="icon-btn dark">⛶<span>全螢幕</span></button>
@@ -217,6 +217,10 @@
       <button class="close-btn" data-close="settingsDialog">×</button>
     </div>
     <div class="settings-body">
+      <label class="class-name-field" for="classNameInput">
+        <span>班級名稱</span>
+        <input id="classNameInput" type="text" placeholder="班級" maxlength="12" />
+      </label>
       <section class="cloud-bar settings-cloud-bar">
         <div class="cloud-actions">
           <button id="signInBtn" class="cloud-btn primary">教師 Google 登入</button>

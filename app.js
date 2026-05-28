@@ -31,7 +31,7 @@ const refs = {
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
   statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),resetBtn:$('resetBtn'),exportBtn:$('exportBtn'),lastSaved:$('lastSaved'),
   studentDialog:$('studentDialog'),studentTitle:$('studentTitle'),studentDetail:$('studentDetail'),markOnTimeBtn:$('markOnTimeBtn'),markLateBtn:$('markLateBtn'),markLeaveBtn:$('markLeaveBtn'),markAbsentBtn:$('markAbsentBtn'),
-  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),settingsDialog:$('settingsDialog')
+  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput')
 };
 let state = loadState();
 let selectedDate = dateKey(new Date());
@@ -55,7 +55,9 @@ function displayDate(key){ const d = new Date(key+'T00:00:00'); const w='日一�
 function nowTime(){ return new Date().toLocaleTimeString('zh-TW',{hour12:false}); }
 function isFirebaseConfigured(){ return ['apiKey','authDomain','projectId','appId'].every(k=>String(firebaseConfig[k]||'').trim()); }
 function getClassId(){ return String(classConfig.classId || 'default').replace(/[^\w-]/g,'') || 'default'; }
-function getClassName(){ return String(classConfig.className || '中山國小聯絡簿'); }
+function getClassLabel(){ return String(state.settings?.className || '').trim() || '班級'; }
+function getClassName(){ return `${getClassLabel()}聯絡簿`; }
+function classLabelFromTitle(title){ return String(title || '').replace(/聯絡簿系統?$/,'').replace(/聯絡簿$/,'').trim(); }
 function getShareId(){ return String(classConfig.shareId || `${cloud.user?.uid || 'teacher'}-${getClassId()}`).replace(/[^\w-]/g,''); }
 function normalizeState(s={}){
   return {
@@ -69,6 +71,7 @@ function normalizeState(s={}){
       fontScale:s.settings?.fontScale || 1,
       fontFamily:s.settings?.fontFamily || 'default',
       textAlign:s.settings?.textAlign || 'center',
+      className:s.settings?.className || '',
       layout:s.settings?.layout || {}
     }
   };
@@ -97,7 +100,7 @@ function getEnabledBookFields(key=selectedDate){
 }
 function init(){
   if(state.settings.fontFamily==='bopomofo') state.settings.fontFamily='iansui';
-  refs.datePicker.value=selectedDate; refs.lateTime.value=state.settings.lateTime; refs.fontFamilySelect.value=state.settings.fontFamily||'default'; ensureDay(selectedDate);
+  refs.datePicker.value=selectedDate; refs.lateTime.value=state.settings.lateTime; refs.fontFamilySelect.value=state.settings.fontFamily||'default'; refs.classNameInput.value=state.settings.className||''; ensureDay(selectedDate);
   applyLayout();
   updateLateTimeDisplay();
   wireEvents(); installLayoutResizers(); installResponsiveSizing(); tick(); setInterval(tick,1000); renderAll();
@@ -218,7 +221,7 @@ function tick(){
   refs.clock.setAttribute('aria-label',`${hh}:${mm}:${ss}`);
   refs.clockHours.textContent=hh; refs.clockMinutes.textContent=mm; refs.clockSeconds.textContent=ss;
   refs.dateFull.textContent=`${n.getFullYear()}年${String(n.getMonth()+1).padStart(2,'0')}月${String(n.getDate()).padStart(2,'0')}日`; refs.weekText.textContent=`星期${'日一二三四五六'[n.getDay()]}`;
-  refs.lunarText.textContent='中山國小聯絡簿系統';
+  refs.lunarText.textContent=getClassName();
   const hm=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; refs.timeStatus.textContent= hm<=state.settings.lateTime ? '準時時段 ✅' : '遲到時段 ⚠️';
 }
 function wireEvents(){
@@ -257,6 +260,7 @@ function wireEvents(){
   refs.statsBtn.onclick=showTodayStats;
   refs.recordsBtn.onclick=showRecords;
   refs.settingsBtn.onclick=()=>refs.settingsDialog.showModal();
+  refs.classNameInput.oninput=()=>{ state.settings.className=refs.classNameInput.value.trim(); refs.lunarText.textContent=getClassName(); save(); };
   refs.signInBtn.onclick=signInTeacher;
   refs.signOutBtn.onclick=signOutTeacher;
   refs.publishShareBtn.onclick=publishParentShare;
@@ -458,7 +462,8 @@ function serializePublicShare(){
       writingMode:state.settings.writingMode,
       fontScale:state.settings.fontScale,
       fontFamily:state.settings.fontFamily,
-      textAlign:state.settings.textAlign
+      textAlign:state.settings.textAlign,
+      className:state.settings.className || ''
     },
     updatedAt:cloud.api.serverTimestamp()
   };
@@ -470,6 +475,7 @@ function applyStateFromCloud(nextState){
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
   refs.lateTime.value=state.settings.lateTime;
   refs.fontFamilySelect.value=state.settings.fontFamily || 'default';
+  refs.classNameInput.value=state.settings.className || '';
   updateLateTimeDisplay();
   applyLayout();
   renderAll();
@@ -552,10 +558,11 @@ async function loadParentShare(){
       books:data.books || {},
       bookFields:data.bookFields || {},
       attendance:data.attendance || {},
-      settings:{...state.settings,...(data.settings||{})}
+      settings:{...state.settings,...(data.settings||{}),className:data.settings?.className ?? classLabelFromTitle(data.className)}
     });
     ensureDay(selectedDate);
-    refs.lunarText.textContent=data.className || getClassName();
+    refs.classNameInput.value=state.settings.className || '';
+    refs.lunarText.textContent=getClassName();
     renderAll();
     updateCloudUi('已載入老師分享的聯絡簿。');
   }catch(err){
