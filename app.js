@@ -29,7 +29,7 @@ const refs = {
   bookFieldToggles:$('bookFieldToggles'),homeworkToggle:$('homeworkToggle'),reminderToggle:$('reminderToggle'),testToggle:$('testToggle'),noteToggle:$('noteToggle'),teacherToggle:$('teacherToggle'),
   homeworkInput:$('homeworkInput'),reminderInput:$('reminderInput'),testInput:$('testInput'),noteInput:$('noteInput'),teacherInput:$('teacherInput'),saveBookBtn:$('saveBookBtn'),copyYesterdayBtn:$('copyYesterdayBtn'),autosaveHint:$('autosaveHint'),
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
-  statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),resetBtn:$('resetBtn'),exportBtn:$('exportBtn'),lastSaved:$('lastSaved'),
+  statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),allOnTimeBtn:$('allOnTimeBtn'),resetBtn:$('resetBtn'),lastSaved:$('lastSaved'),
   studentDialog:$('studentDialog'),studentTitle:$('studentTitle'),studentDetail:$('studentDetail'),markOnTimeBtn:$('markOnTimeBtn'),markLateBtn:$('markLateBtn'),markLeaveBtn:$('markLeaveBtn'),markAbsentBtn:$('markAbsentBtn'),
   namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput')
 };
@@ -258,8 +258,8 @@ function wireEvents(){
   refs.namesBtn.onclick=openNames;
   refs.saveNamesBtn.onclick=saveNames;
   refs.resetNamesBtn.onclick=()=>{state.students=defaultStudents; refs.namesInput.value=studentsToText(); renderAttendance(); save();};
+  refs.allOnTimeBtn.onclick=markAllOnTime;
   refs.resetBtn.onclick=()=>{ if(confirm('確定重設今天所有簽到紀錄？')){ state.attendance[selectedDate]={}; renderAttendance(); save(); }};
-  refs.exportBtn.onclick=exportCsv;
   refs.statsBtn.onclick=showTodayStats;
   refs.recordsBtn.onclick=showRecords;
   refs.settingsBtn.onclick=()=>refs.settingsDialog.showModal();
@@ -599,6 +599,18 @@ function markSeat(seat,mode){
   renderAttendance();
   save();
 }
+function markAllOnTime(){
+  if(!state.students.length) return;
+  if(!confirm('確定將今天全班標記為準時出席？')) return;
+  ensureDay(selectedDate);
+  const time=nowTime().slice(0,5);
+  const updatedAt=new Date().toISOString();
+  state.students.forEach(st=>{
+    state.attendance[selectedDate][st.seat]={status:'ontime',time,updatedAt};
+  });
+  renderAttendance();
+  save();
+}
 function openStudent(seat){ selectedSeat=seat; const st=state.students.find(s=>s.seat===seat); const r=state.attendance[selectedDate][seat]; const stats=getStudentStats(seat); refs.studentTitle.textContent=`${seat}號 ${st?.name||''}`; refs.studentDetail.innerHTML=`<p>今天狀態：<b>${statusText(r)}</b></p><p>今日記錄時間：<b>${r?.time||'--'}</b></p><hr><p>累計準時：${stats.ontime} 次</p><p>累計遲到：${stats.late} 次</p><p>累計請假：${stats.leave} 次</p>`; refs.studentDialog.showModal(); }
 function getStudentStats(seat){ const out={ontime:0,late:0,leave:0}; Object.values(state.attendance).forEach(day=>{ const r=day[seat]; if(r?.status&&out[r.status]!==undefined) out[r.status]++; }); return out; }
 function studentsToText(){ return state.students.map(s=>`${s.seat},${s.name}`).join('\n'); }
@@ -688,7 +700,6 @@ function saveNames(){
   save();
   if(parsed.unmatched) alert(`已儲存可配對的 ${parsed.list.length} 筆名單，另有 ${parsed.unmatched} 筆座號或姓名未配對。`);
 }
-function exportCsv(){ const rows=[['日期','座號','姓名','狀態','時間']]; const rec=state.attendance[selectedDate]||{}; state.students.forEach(s=>{ const r=rec[s.seat]; rows.push([displayDate(selectedDate),s.seat,s.name,statusText(r),r?.time||'']); }); const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`簽到紀錄_${selectedDate}.csv`; a.click(); URL.revokeObjectURL(a.href); }
 function showTodayStats(){ const rec=state.attendance[selectedDate]||{}; const absent=state.students.filter(s=>!rec[s.seat]); const late=state.students.filter(s=>rec[s.seat]?.status==='late'); const leave=state.students.filter(s=>rec[s.seat]?.status==='leave'); showInfo('今日統計',`<p><b>${displayDate(selectedDate)}</b></p><p>未到：${absent.map(s=>s.seat+' '+s.name).join('、')||'無'}</p><p>遲到：${late.map(s=>s.seat+' '+s.name+' '+rec[s.seat].time).join('、')||'無'}</p><p>請假：${leave.map(s=>s.seat+' '+s.name).join('、')||'無'}</p>`); }
 function showRecords(){ const keys=Object.keys(state.attendance).sort().reverse(); let html='<table class="record-table"><tr><th>日期</th><th>已到</th><th>遲到</th><th>請假</th><th>未到</th></tr>'; keys.forEach(k=>{ const day=state.attendance[k]; let on=0,late=0,leave=0; Object.values(day).forEach(r=>{if(r.status==='ontime')on++; if(r.status==='late')late++; if(r.status==='leave')leave++;}); html+=`<tr><td>${displayDate(k)}</td><td>${on+late}</td><td>${late}</td><td>${leave}</td><td>${state.students.length-on-late-leave}</td></tr>`; }); html+='</table>'; showInfo('每日出缺席紀錄',html); }
 function showInfo(title,html){ refs.infoTitle.textContent=title; refs.infoContent.innerHTML=html; refs.infoDialog.showModal(); }
