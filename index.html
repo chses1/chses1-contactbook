@@ -8,20 +8,6 @@
 </head>
 <body>
   <div class="app-shell">
-    <section class="cloud-bar">
-      <div class="cloud-copy">
-        <strong id="cloudModeLabel">本機模式</strong>
-        <span id="cloudHint">尚未連接 Firebase，資料會先存在這台電腦。</span>
-      </div>
-      <div class="cloud-actions">
-        <button id="signInBtn" class="cloud-btn primary">教師 Google 登入</button>
-        <label class="share-attendance-toggle"><input id="shareAttendanceToggle" type="checkbox" /> 分享學生出席</label>
-        <button id="publishShareBtn" class="cloud-btn">更新家長分享</button>
-        <button id="copyShareBtn" class="cloud-btn">複製家長連結</button>
-        <button id="signOutBtn" class="cloud-btn ghost">登出</button>
-      </div>
-    </section>
-
     <header class="hero-clock">
       <section class="clock-block">
         <div class="clock-card">
@@ -70,10 +56,11 @@
             <button id="editBtn" class="primary-btn">編輯聯絡簿</button>
             <button id="writingModeBtn" class="outline-btn">橫書顯示</button>
             <button id="viewModeBtn" class="ghost-btn">直書顯示</button>
+            <button id="formatBtn" class="ghost-btn">格式</button>
           </div>
         </div>
 
-        <div class="font-toolbar">
+        <div id="formatPanel" class="font-toolbar hidden">
           <button id="fontDownBtn" class="font-btn">A−</button>
           <strong id="fontScaleLabel">100%</strong>
           <button id="fontUpBtn" class="font-btn">A+</button>
@@ -188,11 +175,6 @@
       </section>
     </main>
 
-    <footer class="footer-bar">
-      <span id="storageStatus">▣ 資料已自動儲存於本機</span>
-      <span>版本：4.1.0 雲端準備版</span>
-      <span id="lastSaved">最後儲存：--:--:--</span>
-    </footer>
   </div>
 
   <dialog id="studentDialog" class="modal">
@@ -228,6 +210,36 @@
       <button class="close-btn" data-close="infoDialog">×</button>
     </div>
     <div id="infoContent" class="modal-body"></div>
+  </dialog>
+
+  <dialog id="settingsDialog" class="modal wide-modal">
+    <div class="modal-head">
+      <h2>系統設定</h2>
+      <button class="close-btn" data-close="settingsDialog">×</button>
+    </div>
+    <div class="settings-body">
+      <section class="cloud-bar settings-cloud-bar">
+        <div class="cloud-copy">
+          <strong id="cloudModeLabel">本機模式</strong>
+          <span id="cloudHint">尚未連接 Firebase，資料會先存在這台電腦。</span>
+        </div>
+        <div class="cloud-actions">
+          <button id="signInBtn" class="cloud-btn primary">教師 Google 登入</button>
+          <label class="share-attendance-toggle"><input id="shareAttendanceToggle" type="checkbox" /> 分享學生出席</label>
+          <button id="publishShareBtn" class="cloud-btn">更新家長分享</button>
+          <button id="copyShareBtn" class="cloud-btn">複製家長連結</button>
+          <button id="signOutBtn" class="cloud-btn ghost">登出</button>
+        </div>
+      </section>
+      <div class="settings-status">
+        <span id="storageStatus">▣ 資料已自動儲存於本機</span>
+        <span id="lastSaved">最後儲存：--:--:--</span>
+      </div>
+      <div class="settings-note">
+        <p>到校準時時間：<b id="settingsLateTime">07:50</b></p>
+        <p>Firebase 尚未設定或未登入時，資料仍會存在這台電腦的瀏覽器。</p>
+      </div>
+    </div>
   </dialog>
 
   <script src="firebase-config.js"></script>

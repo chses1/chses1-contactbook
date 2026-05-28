@@ -22,7 +22,7 @@ const $ = id => document.getElementById(id);
 const refs = {
   cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
-  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontResetBtn:$('fontResetBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
+  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontResetBtn:$('fontResetBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
   homeworkCard:$('homeworkCard'),reminderCard:$('reminderCard'),testCard:$('testCard'),noteCard:$('noteCard'),teacherCard:$('teacherCard'),emptyBookMessage:$('emptyBookMessage'),
   homeworkView:$('homeworkView'),reminderView:$('reminderView'),testView:$('testView'),noteView:$('noteView'),teacherView:$('teacherView'),
@@ -31,7 +31,7 @@ const refs = {
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
   statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),resetBtn:$('resetBtn'),exportBtn:$('exportBtn'),lastSaved:$('lastSaved'),
   studentDialog:$('studentDialog'),studentTitle:$('studentTitle'),studentDetail:$('studentDetail'),markOnTimeBtn:$('markOnTimeBtn'),markLateBtn:$('markLateBtn'),markLeaveBtn:$('markLeaveBtn'),markAbsentBtn:$('markAbsentBtn'),
-  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent')
+  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),settingsDialog:$('settingsDialog'),settingsLateTime:$('settingsLateTime')
 };
 let state = loadState();
 let selectedDate = dateKey(new Date());
@@ -110,6 +110,7 @@ function updateLateTimeDisplay(){
   refs.lateMinute.textContent=m;
   if(refs.lateLegendOnTime) refs.lateLegendOnTime.textContent=value;
   if(refs.lateLegendLate) refs.lateLegendLate.textContent=value;
+  if(refs.settingsLateTime) refs.settingsLateTime.textContent=value;
 }
 function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
 function getLayout(){ if(!state.settings.layout) state.settings.layout={}; return state.settings.layout; }
@@ -117,6 +118,8 @@ function applyLayout(){
   const layout=getLayout();
   if(!layout.topHeight) layout.topHeight=172;
   if(!layout.leftRatio) layout.leftRatio=.5;
+  const maxTopHeight=clamp(Math.round(window.innerHeight*.28),112,300);
+  layout.topHeight=clamp(layout.topHeight,112,maxTopHeight);
   refs.shell.style.setProperty('--top-height',layout.topHeight+'px');
   refs.mainGrid.classList.toggle('panels-swapped',!!layout.swapped);
   if(refs.swapPanelsBtn) refs.swapPanelsBtn.querySelector('span').textContent=layout.swapped?'恢復左右':'左右對調';
@@ -138,13 +141,15 @@ function updateResponsiveSizing(){
   const topHeight=getLayout().topHeight||172;
   const contactPanel=refs.homeworkCard?.closest('.panel');
   const attendancePanel=refs.studentGrid?.closest('.panel');
+  const viewportScale=clamp(Math.min(window.innerWidth/1280,window.innerHeight/760),.68,1.08);
   const heroScale=clamp(topHeight/172,.78,1.45);
   const panelScale=panel=>{
     if(!panel) return 1;
     const widthScale=panel.clientWidth/720;
     const heightScale=panel.clientHeight/620;
-    return clamp(Math.min(widthScale,heightScale),.72,1.18);
+    return clamp(Math.min(widthScale,heightScale,viewportScale),.62,1.12);
   };
+  refs.shell.style.setProperty('--viewport-scale',viewportScale.toFixed(3));
   refs.shell.style.setProperty('--hero-scale',heroScale.toFixed(3));
   const clockBox=refs.clock?.closest('.clock-block');
   if(clockBox){
@@ -155,7 +160,22 @@ function updateResponsiveSizing(){
   }
   contactPanel?.style.setProperty('--panel-scale',panelScale(contactPanel).toFixed(3));
   attendancePanel?.style.setProperty('--panel-scale',panelScale(attendancePanel).toFixed(3));
+  updateAttendanceTileSizing();
   fitBookTextSoon();
+}
+function updateAttendanceTileSizing(){
+  if(!refs.studentGrid) return;
+  const gridRect=refs.studentGrid.getBoundingClientRect();
+  const count=Math.max(1,state.students?.length || 30);
+  const columns=window.innerWidth<1050 ? Math.min(6,Math.max(3,Math.ceil(Math.sqrt(count)))) : 6;
+  const rows=Math.ceil(count/columns);
+  const gap=Number(getComputedStyle(refs.studentGrid).gap.replace('px',''))||8;
+  const tileWidth=(gridRect.width-gap*(columns-1))/columns;
+  const tileHeight=(gridRect.height-gap*(rows-1))/rows;
+  const seatSize=clamp(Math.floor(Math.min(tileWidth*.42,tileHeight*.48)),16,42);
+  refs.studentGrid.style.setProperty('--student-columns',columns);
+  refs.studentGrid.style.setProperty('--student-rows',rows);
+  refs.studentGrid.style.setProperty('--student-seat-size',seatSize+'px');
 }
 function installLayoutResizers(){
   const drag=(handle,onMove)=>{
@@ -215,6 +235,7 @@ function wireEvents(){
   refs.alignRightBtn.onclick=()=>setBookAlign('right');
   refs.fontFamilySelect.onchange=()=>{ state.settings.fontFamily=refs.fontFamilySelect.value; applyFontScale(); fitBookTextSoon(); save(); };
   refs.fontResetBtn.onclick=()=>{ state.settings.fontScale=1; state.settings.fontFamily='default'; refs.fontFamilySelect.value='default'; applyFontScale(); fitBookTextSoon(); save(); };
+  refs.formatBtn.onclick=()=>toggleFormatPanel();
 
   refs.editBtn.onclick=()=>{ editMode=!editMode; renderBook(); };
   refs.saveBookBtn.onclick=()=>{ writeBookFromInputs(); editMode=false; renderBook(); save(); };
@@ -237,7 +258,7 @@ function wireEvents(){
   refs.exportBtn.onclick=exportCsv;
   refs.statsBtn.onclick=showTodayStats;
   refs.recordsBtn.onclick=showRecords;
-  refs.settingsBtn.onclick=()=>showInfo('系統設定',`<p>目前儲存模式：<b>${cloud.user?'教師雲端同步':'本機瀏覽器備援'}</b></p><p>到校準時時間：<b>${state.settings.lateTime}</b></p><p>Firebase 尚未設定或未登入時，資料仍會存在這台電腦的瀏覽器。</p>`);
+  refs.settingsBtn.onclick=()=>refs.settingsDialog.showModal();
   refs.signInBtn.onclick=signInTeacher;
   refs.signOutBtn.onclick=signOutTeacher;
   refs.publishShareBtn.onclick=publishParentShare;
@@ -247,6 +268,12 @@ function wireEvents(){
   refs.markLateBtn.onclick=()=>{markSeat(selectedSeat,'late'); refs.studentDialog.close();};
   refs.markLeaveBtn.onclick=()=>{markSeat(selectedSeat,'leave'); refs.studentDialog.close();};
   refs.markAbsentBtn.onclick=()=>{markSeat(selectedSeat,'absent'); refs.studentDialog.close();};
+}
+function toggleFormatPanel(){
+  const open=refs.formatPanel.classList.toggle('hidden')===false;
+  refs.formatBtn.classList.toggle('active',open);
+  refs.formatBtn.setAttribute('aria-expanded',String(open));
+  setTimeout(()=>fitBookTextSoon(),0);
 }
 function changeFontScale(delta){ state.settings.fontScale=Math.max(0.75,Math.min(1.6,Number((state.settings.fontScale+delta).toFixed(2)))); applyFontScale(); fitBookTextSoon(); save(); }
 function applyFontScale(){ const scale=state.settings.fontScale||1; const fontKey=state.settings.fontFamily||'default'; const family=FONT_STACKS[fontKey]||FONT_STACKS.default; refs.bookDisplay.dataset.fontFamily=fontKey; refs.editor.dataset.fontFamily=fontKey; refs.bookDisplay.style.setProperty('--book-font-scale',scale); refs.editor.style.setProperty('--book-font-scale',scale); refs.bookDisplay.style.setProperty('--book-font-family',family); refs.editor.style.setProperty('--book-font-family',family); refs.fontScaleLabel.textContent=Math.round(scale*100)+'%'; }
@@ -539,6 +566,7 @@ function renderAttendance(){
   state.students.forEach(st=>{ const r=rec[st.seat]; if(r?.status==='ontime') on++; if(r?.status==='late') late++; if(r?.status==='leave') leave++;
     const btn=document.createElement('button'); btn.className='student-btn '+(r?.status||'absent'); btn.innerHTML=`<div class="seat">${st.seat}</div>`; if(!cloud.parentShareId) btn.onclick=()=>studentClick(st.seat); refs.studentGrid.appendChild(btn); });
   refs.arrivedCount.textContent=on+late; refs.lateCount.textContent=late; refs.leaveCount.textContent=leave; refs.absentCount.textContent=state.students.length-on-late-leave;
+  updateAttendanceTileSizing();
 }
 function statusText(r){ if(!r)return'未到'; if(r.status==='ontime')return r.time||'準時'; if(r.status==='late')return r.time||'遲到'; if(r.status==='leave')return'請假'; return'未到'; }
 function studentClick(seat){ const rec=state.attendance[selectedDate][seat]; if(!rec){ markSeat(seat,'auto'); return; } openStudent(seat); }

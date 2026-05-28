@@ -218,7 +218,7 @@
 .split-label{min-width:84px;min-height:58px;display:inline-flex;align-items:center;justify-content:center;text-align:center;line-height:1.25;white-space:normal}
 
 /* teacher-adjustable layout */
-.app-shell{--top-height:172px;--left-width:1fr;--hero-scale:1;--panel-scale:1;gap:6px}
+.app-shell{--top-height:172px;--left-width:1fr;--hero-scale:1;--panel-scale:1;--viewport-scale:1;gap:6px}
 .hero-clock{height:var(--top-height)!important;min-height:132px;max-height:300px;padding:calc(14px * var(--hero-scale)) 30px}
 .main-grid{grid-template-columns:minmax(300px,var(--left-width)) 10px minmax(280px,1fr);gap:4px}
 .resize-handle{position:relative;z-index:5;flex:0 0 auto;touch-action:none;user-select:none}
@@ -236,9 +236,9 @@
 .date-full{font-size:calc(24px * var(--hero-scale))}.week-text{font-size:calc(48px * var(--hero-scale))}.lunar-pill{font-size:calc(15px * var(--hero-scale));padding:calc(5px * var(--hero-scale)) calc(14px * var(--hero-scale))}
 .arrival-card{height:calc(140px * var(--hero-scale))}.arrival-title{font-size:calc(18px * var(--hero-scale))}.late-time-shell{width:calc(178px * var(--hero-scale))}.late-time-part{height:calc(54px * var(--hero-scale));font-size:calc(42px * var(--hero-scale))}.late-time-colon{font-size:calc(36px * var(--hero-scale))}.arrival-status{font-size:calc(22px * var(--hero-scale))}
 .icon-btn{height:calc(116px * var(--hero-scale));font-size:calc(40px * var(--hero-scale))}.icon-btn span{font-size:calc(21px * var(--hero-scale))}
-.panel{padding:calc(20px * var(--panel-scale)) calc(26px * var(--panel-scale))}
+.panel{padding:clamp(12px,calc(20px * var(--panel-scale)),24px) clamp(14px,calc(26px * var(--panel-scale)),28px)}
 .panel h1{font-size:calc(32px * var(--panel-scale))}.title-icon{width:calc(38px * var(--panel-scale));height:calc(38px * var(--panel-scale));font-size:calc(22px * var(--panel-scale))}
-.summary-row{gap:calc(14px * var(--panel-scale));margin:calc(18px * var(--panel-scale)) 0}.summary-card{height:calc(82px * var(--panel-scale))}.summary-card strong{font-size:calc(34px * var(--panel-scale))}.summary-card span{font-size:calc(17px * var(--panel-scale))}
+.summary-row{gap:clamp(6px,calc(14px * var(--panel-scale)),14px);margin:clamp(8px,calc(18px * var(--panel-scale)),18px) 0}.summary-card{height:clamp(54px,calc(82px * var(--panel-scale)),82px)}.summary-card strong{font-size:clamp(22px,calc(34px * var(--panel-scale)),34px)}.summary-card span{font-size:clamp(12px,calc(17px * var(--panel-scale)),17px)}
 .student-grid{gap:calc(12px * var(--panel-scale))}.student-btn .seat{font-size:calc(36px * var(--panel-scale))}.student-btn::after{left:calc(12px * var(--panel-scale));bottom:calc(10px * var(--panel-scale));width:calc(12px * var(--panel-scale));height:calc(12px * var(--panel-scale))}
 .bottom-actions{gap:calc(14px * var(--panel-scale))}.legend{gap:calc(18px * var(--panel-scale));font-size:calc(14px * var(--panel-scale))}
 
@@ -366,3 +366,86 @@
 .contact-panel.editing .editor-actions{position:sticky;bottom:0;z-index:2;display:grid;grid-template-columns:1fr 1fr;align-self:stretch;height:66px;min-height:66px;gap:12px;padding-top:8px;background:#fff}
 .contact-panel.editing .editor-actions button{width:100%;height:58px;font-size:20px;border-radius:12px}
 .contact-panel.editing #autosaveHint{display:none}
+
+/* space-saving controls */
+.settings-cloud-bar{margin:0;box-shadow:none}
+.settings-body{padding:18px 22px;display:grid;gap:14px}
+.settings-status{display:flex;flex-wrap:wrap;gap:12px 22px;padding:12px 14px;border-radius:12px;background:#f8fbff;border:1px solid #dbe7f5;color:#415675;font-size:15px;font-weight:850}
+.settings-note{color:#415675;font-weight:750;line-height:1.55}
+.settings-note p{margin:6px 0}
+.contact-panel .head-actions{grid-template-columns:158px 64px 64px 64px 64px}
+.contact-panel #formatBtn.active{background:#1167df;color:#fff}
+.contact-panel .font-toolbar{margin-top:8px}
+.date-full{font-size:clamp(18px,calc(22px * var(--hero-scale)),24px);white-space:normal;text-align:center}
+.week-text{font-size:clamp(32px,calc(44px * var(--hero-scale)),48px)}
+.lunar-pill{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.hero-clock{grid-template-columns:minmax(390px,1.35fr) minmax(145px,.45fr) minmax(190px,.62fr) minmax(220px,.7fr);gap:12px;padding-left:24px;padding-right:24px}
+.hero-clock:before{inset:0}
+.contact-panel .panel-head{flex-wrap:wrap}
+
+@media(max-width:1320px){
+  .contact-panel .head-actions{
+    grid-template-columns:minmax(138px,1.6fr) repeat(4,minmax(52px,1fr));
+    width:100%;
+  }
+  .contact-panel .head-actions input[type=date],.contact-panel .head-actions button{width:100%}
+}
+
+/* browser zoom and display-scaling guardrails for the attendance board */
+.attendance-panel{min-height:0}
+.student-grid{
+  grid-template-columns:repeat(var(--student-columns,6),minmax(40px,1fr));
+  grid-template-rows:repeat(var(--student-rows,5),minmax(42px,1fr));
+  overflow:auto;
+  padding:2px;
+  scrollbar-gutter:stable;
+}
+.student-btn{
+  container-type:size;
+  min-height:42px;
+  overflow:hidden;
+}
+.student-btn .seat{
+  font-size:var(--student-seat-size,clamp(18px,min(46cqh,42cqw),calc(36px * var(--panel-scale))));
+  line-height:.9;
+}
+.student-btn::after{
+  width:clamp(8px,14cqh,calc(12px * var(--panel-scale)));
+  height:clamp(8px,14cqh,calc(12px * var(--panel-scale)));
+  left:clamp(6px,10cqw,calc(12px * var(--panel-scale)));
+  bottom:clamp(5px,10cqh,calc(10px * var(--panel-scale)));
+}
+
+@media(max-width:900px){
+  .settings-cloud-bar{align-items:stretch}
+  .settings-status{font-size:14px}
+  .contact-panel .head-actions{grid-template-columns:1fr 1fr;align-self:stretch}
+  .contact-panel .head-actions input[type=date],.contact-panel .head-actions button{width:100%}
+}
+
+@media(max-width:1050px){
+  html,body{height:auto;min-height:100%;overflow:auto}
+  .app-shell{height:auto;min-height:100vh}
+  .hero-clock{grid-template-columns:1fr 1fr;min-height:0;height:auto!important;padding:12px 16px;border-radius:0 0 22px 22px}
+  .clock-block{grid-column:1/-1;min-height:84px}
+  .date-block,.arrival-card,.top-buttons{min-width:0}
+  .top-buttons{grid-template-columns:repeat(4,minmax(64px,1fr))}
+  .icon-btn{height:clamp(62px,9vw,82px);font-size:clamp(22px,4vw,30px)}
+  .icon-btn span{font-size:clamp(12px,2vw,15px)}
+  .main-grid,.main-grid.panels-swapped{display:grid;grid-template-columns:1fr!important;grid-auto-rows:minmax(440px,auto);overflow:visible}
+  .main-resize{display:none}
+  .main-grid.panels-swapped .contact-panel,.main-grid.panels-swapped .attendance-panel{grid-column:auto;grid-row:auto}
+  .panel{overflow:visible}
+  .contact-panel,.attendance-panel{min-height:440px}
+  .attendance-head .subtle{display:none}
+}
+
+@media(max-height:720px) and (min-width:1051px){
+  .app-shell{padding:8px;gap:4px}
+  .hero-clock{min-height:104px}
+  .top-resize{height:8px}
+  .panel h1{font-size:clamp(22px,calc(32px * var(--panel-scale)),30px)}
+  .summary-row{margin:6px 0}
+  .legend{margin:7px 0 6px}
+  .bottom-actions{padding-top:8px}
+}
