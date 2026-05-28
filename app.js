@@ -22,7 +22,7 @@ const $ = id => document.getElementById(id);
 const refs = {
   cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
-  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
+  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),lineHeightDownBtn:$('lineHeightDownBtn'),lineHeightUpBtn:$('lineHeightUpBtn'),lineHeightLabel:$('lineHeightLabel'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
   homeworkCard:$('homeworkCard'),reminderCard:$('reminderCard'),testCard:$('testCard'),noteCard:$('noteCard'),teacherCard:$('teacherCard'),emptyBookMessage:$('emptyBookMessage'),
   homeworkView:$('homeworkView'),reminderView:$('reminderView'),testView:$('testView'),noteView:$('noteView'),teacherView:$('teacherView'),
@@ -69,6 +69,7 @@ function normalizeState(s={}){
       lateTime:s.settings?.lateTime || '07:50',
       writingMode:s.settings?.writingMode || 'horizontal',
       fontScale:s.settings?.fontScale || 1,
+      lineHeightScale:s.settings?.lineHeightScale || 1,
       fontFamily:s.settings?.fontFamily || 'default',
       textAlign:s.settings?.textAlign || 'center',
       className:s.settings?.className || '',
@@ -232,6 +233,8 @@ function wireEvents(){
   refs.swapPanelsBtn.onclick=()=>{ const layout=getLayout(); layout.swapped=!layout.swapped; applyLayout(); save(); };
   refs.fontDownBtn.onclick=()=>changeFontScale(-0.1);
   refs.fontUpBtn.onclick=()=>changeFontScale(0.1);
+  refs.lineHeightDownBtn.onclick=()=>changeLineHeight(-0.1);
+  refs.lineHeightUpBtn.onclick=()=>changeLineHeight(0.1);
   refs.alignLeftBtn.onclick=()=>setBookAlign('left');
   refs.alignCenterBtn.onclick=()=>setBookAlign('center');
   refs.alignRightBtn.onclick=()=>setBookAlign('right');
@@ -277,8 +280,10 @@ function toggleFormatPanel(){
   refs.formatBtn.setAttribute('aria-expanded',String(open));
   setTimeout(()=>fitBookTextSoon(),0);
 }
-function changeFontScale(delta){ state.settings.fontScale=Math.max(0.75,Math.min(1.6,Number((state.settings.fontScale+delta).toFixed(2)))); applyFontScale(); fitBookTextSoon(); save(); }
-function applyFontScale(){ const scale=state.settings.fontScale||1; const fontKey=state.settings.fontFamily||'default'; const family=FONT_STACKS[fontKey]||FONT_STACKS.default; refs.bookDisplay.dataset.fontFamily=fontKey; refs.editor.dataset.fontFamily=fontKey; refs.bookDisplay.style.setProperty('--book-font-scale',scale); refs.editor.style.setProperty('--book-font-scale',scale); refs.bookDisplay.style.setProperty('--book-font-family',family); refs.editor.style.setProperty('--book-font-family',family); refs.fontScaleLabel.textContent=Math.round(scale*100)+'%'; }
+function changeFontScale(delta){ state.settings.fontScale=Math.max(0.75,Math.min(2.2,Number((state.settings.fontScale+delta).toFixed(2)))); applyFormatSettings(); fitBookTextSoon(); save(); }
+function changeLineHeight(delta){ state.settings.lineHeightScale=Math.max(0.9,Math.min(2.2,Number(((state.settings.lineHeightScale||1)+delta).toFixed(2)))); applyFormatSettings(); fitBookTextSoon(); save(); }
+function applyFontScale(){ applyFormatSettings(); }
+function applyFormatSettings(){ const scale=state.settings.fontScale||1; const lineHeightScale=state.settings.lineHeightScale||1; const fontKey=state.settings.fontFamily||'default'; const family=FONT_STACKS[fontKey]||FONT_STACKS.default; refs.bookDisplay.dataset.fontFamily=fontKey; refs.editor.dataset.fontFamily=fontKey; refs.bookDisplay.style.setProperty('--book-font-scale',scale); refs.editor.style.setProperty('--book-font-scale',scale); refs.bookDisplay.style.setProperty('--book-line-height-scale',lineHeightScale); refs.editor.style.setProperty('--book-line-height-scale',lineHeightScale); refs.bookDisplay.style.setProperty('--book-font-family',family); refs.editor.style.setProperty('--book-font-family',family); refs.fontScaleLabel.textContent=Math.round(scale*100)+'%'; refs.lineHeightLabel.textContent=Math.round(lineHeightScale*100)+'%'; }
 function setBookAlign(align){ state.settings.textAlign=align; applyBookAlign(); fitBookTextSoon(); save(); }
 function applyBookAlign(){
   const align=['left','center','right'].includes(state.settings.textAlign) ? state.settings.textAlign : 'center';
@@ -461,6 +466,7 @@ function serializePublicShare(){
     settings:{
       writingMode:state.settings.writingMode,
       fontScale:state.settings.fontScale,
+      lineHeightScale:state.settings.lineHeightScale,
       fontFamily:state.settings.fontFamily,
       textAlign:state.settings.textAlign,
       className:state.settings.className || ''
@@ -573,7 +579,7 @@ async function loadParentShare(){
 function renderAttendance(){
   ensureDay(selectedDate); const rec=state.attendance[selectedDate]; refs.studentGrid.innerHTML=''; let on=0,late=0,leave=0;
   state.students.forEach(st=>{ const r=rec[st.seat]; if(r?.status==='ontime') on++; if(r?.status==='late') late++; if(r?.status==='leave') leave++;
-    const btn=document.createElement('button'); btn.className='student-btn '+(r?.status||'absent'); btn.innerHTML=`<div class="seat">${st.seat}</div>`; if(!cloud.parentShareId) btn.onclick=()=>studentClick(st.seat); refs.studentGrid.appendChild(btn); });
+    const btn=document.createElement('button'); btn.className='student-btn '+(r?.status||'absent'); btn.innerHTML=`<div class="seat">${st.seat}</div><div class="name">${escapeHtml(st.name||'')}</div>`; if(!cloud.parentShareId) btn.onclick=()=>studentClick(st.seat); refs.studentGrid.appendChild(btn); });
   refs.arrivedCount.textContent=on+late; refs.lateCount.textContent=late; refs.leaveCount.textContent=leave; refs.absentCount.textContent=state.students.length-on-late-leave;
   updateAttendanceTileSizing();
 }
@@ -597,7 +603,60 @@ function openStudent(seat){ selectedSeat=seat; const st=state.students.find(s=>s
 function getStudentStats(seat){ const out={ontime:0,late:0,leave:0}; Object.values(state.attendance).forEach(day=>{ const r=day[seat]; if(r?.status&&out[r.status]!==undefined) out[r.status]++; }); return out; }
 function studentsToText(){ return state.students.map(s=>`${s.seat},${s.name}`).join('\n'); }
 function openNames(){ refs.namesInput.value=studentsToText(); refs.namesDialog.showModal(); }
-function saveNames(){ const lines=refs.namesInput.value.split('\n').map(x=>x.trim()).filter(Boolean); const list=[]; for(const line of lines){ const [seat,...nameParts]=line.split(','); const s=String(seat||'').trim().padStart(2,'0'); const name=nameParts.join(',').trim()||`${Number(s)}號`; if(/^\d{2}$/.test(s)) list.push({seat:s,name}); } if(!list.length){ alert('名單格式錯誤'); return; } state.students=list.slice(0,60); refs.namesDialog.close(); renderAttendance(); save(); }
+function toHalfWidth(text){ return String(text||'').replace(/[０-９]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0xFEE0)).replace(/[，、]/g,','); }
+function normalizeStudentName(text){ return String(text||'').replace(/[^\u3400-\u9fffA-Za-z·．・‧]/g,'').trim(); }
+function parseCommaRoster(text){
+  const list=[];
+  toHalfWidth(text).split('\n').map(x=>x.trim()).filter(Boolean).forEach(line=>{
+    const match=line.match(/^(\d{1,2})\s*[,，\t ]+\s*(.+)$/);
+    if(!match) return;
+    const seat=match[1].padStart(2,'0');
+    const name=normalizeStudentName(match[2]) || `${Number(seat)}號`;
+    if(/^\d{2}$/.test(seat)) list.push({seat,name});
+  });
+  return list;
+}
+function parseTeacherManualRoster(text){
+  const raw=toHalfWidth(text).replace(/\r/g,'\n');
+  const lines=raw.split('\n').map(line=>line.trim()).filter(Boolean);
+  const stopWords=new Set(['號','姓名','姓','名','座號','班級','學生','導師','老師','男生','女生','共','人']);
+  const seats=[];
+  const names=[];
+  let nameMode=false;
+  for(const line of lines){
+    const compact=line.replace(/\s+/g,'');
+    if(/^(號|座號)\d+/.test(compact) || /^(號|座號)$/.test(compact)){ nameMode=false; }
+    if(/^(姓名|姓名號|姓|名)$/.test(compact) || compact.startsWith('姓名')) nameMode=true;
+    const isFooter=/班級|學生|導師|老師|共\s*\d+\s*人|\d+\s*人/.test(line);
+    if(isFooter && !compact.startsWith('姓名')) continue;
+    const nums=[...line.matchAll(/\d{1,2}/g)].map(m=>Number(m[0])).filter(n=>n>=1&&n<=99);
+    nums.forEach(n=>{ if(!seats.includes(n)) seats.push(n); });
+    const chunks=line.split(/[\s,，、|｜]+/).map(normalizeStudentName).filter(Boolean);
+    chunks.forEach(chunk=>{
+      if(stopWords.has(chunk) || /\d/.test(chunk) || /[班學生老師師男女共人]/.test(chunk)) return;
+      if(chunk.length>=2 && chunk.length<=4 && (nameMode || seats.length)) names.push(chunk);
+    });
+  }
+  if(!seats.length || !names.length) return {list:[],unmatched:0};
+  const count=Math.min(seats.length,names.length,60);
+  const list=Array.from({length:count},(_,i)=>({seat:String(seats[i]).padStart(2,'0'),name:names[i]}));
+  return {list,unmatched:Math.abs(seats.length-names.length)};
+}
+function parseStudentRoster(text){
+  const commaList=parseCommaRoster(text);
+  if(commaList.length) return {list:commaList.slice(0,60),unmatched:0};
+  const manual=parseTeacherManualRoster(text);
+  return {list:manual.list.slice(0,60),unmatched:manual.unmatched};
+}
+function saveNames(){
+  const parsed=parseStudentRoster(refs.namesInput.value);
+  if(!parsed.list.length){ alert('名單格式錯誤，請確認是否包含座號與姓名'); return; }
+  state.students=parsed.list;
+  refs.namesDialog.close();
+  renderAttendance();
+  save();
+  if(parsed.unmatched) alert(`已儲存可配對的 ${parsed.list.length} 筆名單，另有 ${parsed.unmatched} 筆座號或姓名未配對。`);
+}
 function exportCsv(){ const rows=[['日期','座號','姓名','狀態','時間']]; const rec=state.attendance[selectedDate]||{}; state.students.forEach(s=>{ const r=rec[s.seat]; rows.push([displayDate(selectedDate),s.seat,s.name,statusText(r),r?.time||'']); }); const csv='\ufeff'+rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(',')).join('\n'); const blob=new Blob([csv],{type:'text/csv;charset=utf-8'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`簽到紀錄_${selectedDate}.csv`; a.click(); URL.revokeObjectURL(a.href); }
 function showTodayStats(){ const rec=state.attendance[selectedDate]||{}; const absent=state.students.filter(s=>!rec[s.seat]); const late=state.students.filter(s=>rec[s.seat]?.status==='late'); const leave=state.students.filter(s=>rec[s.seat]?.status==='leave'); showInfo('今日統計',`<p><b>${displayDate(selectedDate)}</b></p><p>未到：${absent.map(s=>s.seat+' '+s.name).join('、')||'無'}</p><p>遲到：${late.map(s=>s.seat+' '+s.name+' '+rec[s.seat].time).join('、')||'無'}</p><p>請假：${leave.map(s=>s.seat+' '+s.name).join('、')||'無'}</p>`); }
 function showRecords(){ const keys=Object.keys(state.attendance).sort().reverse(); let html='<table class="record-table"><tr><th>日期</th><th>已到</th><th>遲到</th><th>請假</th><th>未到</th></tr>'; keys.forEach(k=>{ const day=state.attendance[k]; let on=0,late=0,leave=0; Object.values(day).forEach(r=>{if(r.status==='ontime')on++; if(r.status==='late')late++; if(r.status==='leave')leave++;}); html+=`<tr><td>${displayDate(k)}</td><td>${on+late}</td><td>${late}</td><td>${leave}</td><td>${state.students.length-on-late-leave}</td></tr>`; }); html+='</table>'; showInfo('每日出缺席紀錄',html); }

@@ -64,6 +64,9 @@
           <button id="fontDownBtn" class="font-btn">A−</button>
           <strong id="fontScaleLabel">100%</strong>
           <button id="fontUpBtn" class="font-btn">A+</button>
+          <button id="lineHeightDownBtn" class="font-btn">行−</button>
+          <strong id="lineHeightLabel">100%</strong>
+          <button id="lineHeightUpBtn" class="font-btn">行+</button>
           <div class="align-toolbar" aria-label="聯絡簿對齊方式">
             <button id="alignLeftBtn" class="align-btn" type="button">置左</button>
             <button id="alignCenterBtn" class="align-btn" type="button">置中</button>
@@ -144,7 +147,6 @@
         <div class="panel-head attendance-head">
           <div>
             <h1><span class="title-icon people">♣</span>學生簽到區</h1>
-            <div class="subtle">點擊座號即可登記到校時間，再次點擊可檢視紀錄</div>
           </div>
           <button id="namesBtn" class="outline-btn">👥 名單設定</button>
         </div>
@@ -195,7 +197,7 @@
       <h2>學生名單設定</h2>
       <button class="close-btn" data-close="namesDialog">×</button>
     </div>
-    <p class="subtle">每行一位學生，格式：座號,姓名。例如：01,王小明</p>
+    <p class="subtle">可直接貼上校務系統學生名冊、教師手冊名單，或每行輸入：座號,姓名。例如：01,王小明</p>
     <textarea id="namesInput" class="names-input"></textarea>
     <div class="modal-actions">
       <button id="resetNamesBtn" class="ghost-btn">恢復 1–30 號</button>
