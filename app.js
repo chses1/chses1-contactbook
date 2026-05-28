@@ -608,7 +608,7 @@ function normalizeStudentName(text){ return String(text||'').replace(/[^\u3400-\
 function rosterCells(line){
   const text=toHalfWidth(line).trim();
   if(!text) return [];
-  return text.includes('\t') ? text.split('\t').map(x=>x.trim()).filter(Boolean) : text.split(/\s+/).map(x=>x.trim()).filter(Boolean);
+  return text.includes('\t') ? text.split('\t').map(x=>x.trim()) : text.split(/\s+/).map(x=>x.trim()).filter(Boolean);
 }
 function parseRosterTableRows(lines){
   const list=[];
@@ -621,13 +621,15 @@ function parseRosterTableRows(lines){
     const nextLabel=normalizeStudentName(nextCells[0]||'');
     if(nextLabel!=='姓名') continue;
     const seats=cells.slice(1).map(x=>Number(x.match(/\d{1,2}/)?.[0])).filter(n=>n>=1&&n<=99);
-    const names=nextCells.slice(1).map(normalizeStudentName).filter(Boolean);
-    const count=Math.min(seats.length,names.length,60-list.length);
+    const names=nextCells.slice(1).map(normalizeStudentName);
+    const count=Math.min(seats.length,names.length);
     for(let j=0;j<count;j++){
+      if(!names[j]) continue;
       const seat=String(seats[j]).padStart(2,'0');
       if(!list.some(st=>st.seat===seat)) list.push({seat,name:names[j]});
+      if(list.length>=60) break;
     }
-    unmatched+=Math.abs(seats.length-names.length);
+    unmatched+=Math.abs(seats.length-names.length)+names.slice(0,seats.length).filter(name=>!name).length;
     i++;
   }
   return {list:list.slice(0,60),unmatched};

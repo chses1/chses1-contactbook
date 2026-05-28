@@ -417,18 +417,21 @@
   container-type:size;
   min-height:42px;
   overflow:hidden;
-  gap:clamp(1px,3cqh,4px);
-  padding:clamp(3px,4cqh,7px) clamp(5px,5cqw,8px);
+  gap:clamp(2px,4cqh,5px);
+  padding:clamp(2px,3cqh,5px) clamp(5px,5cqw,8px) clamp(4px,5cqh,8px);
 }
 .student-btn .seat{
   font-size:var(--student-seat-size,clamp(18px,min(46cqh,42cqw),calc(36px * var(--panel-scale))));
   line-height:.9;
 }
+.student-btn:has(.name:not(:empty)) .seat{
+  transform:translateY(clamp(-4px,-5cqh,-2px));
+}
 .student-btn .name{
   display:block!important;
   width:100%;
   color:#64748b;
-  font-size:clamp(10px,min(18cqh,13cqw),14px);
+  font-size:clamp(12px,min(23cqh,16cqw),18px);
   font-weight:900;
   line-height:1;
   overflow:hidden;
