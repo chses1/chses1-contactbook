@@ -20,7 +20,7 @@ const BOOK_FIELDS = [
 const defaultStudents = Array.from({length:30},(_,i)=>({seat:String(i+1).padStart(2,'0'),name:`${i+1}號`}));
 const $ = id => document.getElementById(id);
 const refs = {
-  cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
+  cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),helpBtn:$('helpBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
   clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),lineHeightDownBtn:$('lineHeightDownBtn'),lineHeightUpBtn:$('lineHeightUpBtn'),lineHeightLabel:$('lineHeightLabel'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
@@ -268,6 +268,7 @@ function wireEvents(){
   refs.signOutBtn.onclick=signOutTeacher;
   refs.publishShareBtn.onclick=publishParentShare;
   refs.copyShareBtn.onclick=copyParentShareLink;
+  refs.helpBtn.onclick=showHelp;
   document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
   refs.markOnTimeBtn.onclick=()=>{markSeat(selectedSeat,'ontime'); refs.studentDialog.close();};
   refs.markLateBtn.onclick=()=>{markSeat(selectedSeat,'late'); refs.studentDialog.close();};
@@ -702,5 +703,18 @@ function saveNames(){
 }
 function showTodayStats(){ const rec=state.attendance[selectedDate]||{}; const absent=state.students.filter(s=>!rec[s.seat]); const late=state.students.filter(s=>rec[s.seat]?.status==='late'); const leave=state.students.filter(s=>rec[s.seat]?.status==='leave'); showInfo('今日統計',`<p><b>${displayDate(selectedDate)}</b></p><p>未到：${absent.map(s=>s.seat+' '+s.name).join('、')||'無'}</p><p>遲到：${late.map(s=>s.seat+' '+s.name+' '+rec[s.seat].time).join('、')||'無'}</p><p>請假：${leave.map(s=>s.seat+' '+s.name).join('、')||'無'}</p>`); }
 function showRecords(){ const keys=Object.keys(state.attendance).sort().reverse(); let html='<table class="record-table"><tr><th>日期</th><th>已到</th><th>遲到</th><th>請假</th><th>未到</th></tr>'; keys.forEach(k=>{ const day=state.attendance[k]; let on=0,late=0,leave=0; Object.values(day).forEach(r=>{if(r.status==='ontime')on++; if(r.status==='late')late++; if(r.status==='leave')leave++;}); html+=`<tr><td>${displayDate(k)}</td><td>${on+late}</td><td>${late}</td><td>${leave}</td><td>${state.students.length-on-late-leave}</td></tr>`; }); html+='</table>'; showInfo('每日出缺席紀錄',html); }
+function showHelp(){
+  showInfo('使用說明',`
+    <div class="help-list">
+      <section><h3>Q：如何編輯今天的聯絡簿？</h3><p>A：選好日期後按「編輯聯絡簿」，填寫功課、提醒、考試、攜帶物品或老師的話，再按「完成編輯」。</p></section>
+      <section><h3>Q：如何調整聯絡簿顯示？</h3><p>A：按「格式」可切換橫書、直書，也能調整字級、行距、對齊與字體。</p></section>
+      <section><h3>Q：如何設定學生名單？</h3><p>A：按「名單設定」，可貼上校務系統或教師手冊名冊，也可每行輸入「座號,姓名」。空號會自動略過。</p></section>
+      <section><h3>Q：如何登記學生到校？</h3><p>A：點學生座號即可依目前時間記為準時或遲到；再次點同一位學生可改為準時、遲到、請假或未到。</p></section>
+      <section><h3>Q：全班都到齊時怎麼操作？</h3><p>A：按「全班準時出席」，確認後會把今天名單內所有學生標記為準時。</p></section>
+      <section><h3>Q：如何分享給家長？</h3><p>A：登入教師 Google 帳號後按「更新家長分享」，再把連結傳給家長。需要顯示座號出席狀態時，先勾選「分享學生出席」。</p></section>
+      <section><h3>Q：班級名稱在哪裡設定？</h3><p>A：在「系統設定」填入班級名稱，畫面與家長分享標題會顯示為該班級的聯絡簿。</p></section>
+    </div>
+  `);
+}
 function showInfo(title,html){ refs.infoTitle.textContent=title; refs.infoContent.innerHTML=html; refs.infoDialog.showModal(); }
 init();

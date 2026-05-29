@@ -382,6 +382,10 @@
 .settings-cloud-bar{display:block;padding:0;border:0;background:transparent;box-shadow:none}
 .settings-cloud-bar .cloud-actions{display:grid;grid-template-columns:1fr;gap:10px;justify-content:stretch}
 .settings-cloud-bar .cloud-btn,.settings-cloud-bar .share-attendance-toggle{width:100%;min-height:46px;justify-content:center;font-size:16px}
+.help-list{display:grid;gap:14px;line-height:1.55}
+.help-list section{padding:12px 14px;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc}
+.help-list h3{margin:0 0 6px;color:#0b2b7e;font-size:18px}
+.help-list p{margin:0;color:#334155;font-weight:700}
 .summary-card.ontime{color:#11884a;background:#dcfce7;border-color:#18a957}
 .student-btn.ontime{background:#dcfce7;border-color:#18a957;box-shadow:0 7px 16px rgba(24,169,87,.16)}
 .student-btn.ontime::after,.dot.green{background:#18a957}
