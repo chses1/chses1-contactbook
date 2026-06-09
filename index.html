@@ -67,6 +67,14 @@
           <button id="lineHeightDownBtn" class="font-btn">行−</button>
           <strong id="lineHeightLabel">100%</strong>
           <button id="lineHeightUpBtn" class="font-btn">行+</button>
+          <label class="font-select-label">
+            注音
+            <select id="phoneticModeSelect" class="font-select phonetic-select">
+              <option value="none">顯示國字</option>
+              <option value="font">顯示注音</option>
+              <option value="zhuyin">全注音</option>
+            </select>
+          </label>
           <div class="align-toolbar" aria-label="聯絡簿對齊方式">
             <button id="alignLeftBtn" class="align-btn" type="button">置左</button>
             <button id="alignCenterBtn" class="align-btn" type="button">置中</button>
@@ -77,7 +85,6 @@
               <option value="default">預設黑體</option>
               <option value="rounded">圓體</option>
               <option value="kai">標楷體</option>
-              <option value="iansui">芫荽注音字體</option>
             </select>
           </label>
         </div>
@@ -136,8 +143,10 @@
           <div class="editor-field" data-book-field-panel="teacher"><label for="teacherInput">老師的話</label><textarea id="teacherInput" rows="1"></textarea></div>
           <div class="editor-actions">
             <button id="copyYesterdayBtn" class="outline-btn">貼上昨天的作業</button>
+            <button id="markPhoneticBtn" class="white-btn" type="button">標注破音</button>
             <button id="saveBookBtn" class="primary-btn">儲存</button>
           </div>
+          <div class="phonetic-guide">標注破音：先在文字框反白一個中文字，再按「標注破音」，點選候選讀音後儲存。「顯示注音」會顯示國字加注音；「全注音」會只顯示注音，適合一年級使用。</div>
           <div id="autosaveHint" class="subtle">資料會自動儲存在本機瀏覽器。</div>
         </div>
       </section>
@@ -213,6 +222,24 @@
     <div id="infoContent" class="modal-body"></div>
   </dialog>
 
+  <dialog id="phoneticDialog" class="modal">
+    <div class="modal-head">
+      <h2>標注破音</h2>
+      <button class="close-btn" data-close="phoneticDialog">×</button>
+    </div>
+    <div class="modal-body phonetic-editor">
+      <p>選取字：<b id="phoneticChar">字</b></p>
+      <div id="phoneticChoices" class="phonetic-choices" aria-label="候選讀音"></div>
+      <label for="phoneticInput">注音</label>
+      <input id="phoneticInput" class="phonetic-input" type="text" placeholder="請從候選讀音選擇" readonly />
+      <p class="subtle">候選讀音依 IVS 注音字型順序套用；未列入候選的字會使用字型預設注音。</p>
+    </div>
+    <div class="modal-actions">
+      <button id="clearPhoneticBtn" class="ghost-btn" type="button">清除標注</button>
+      <button id="savePhoneticBtn" class="primary-btn" type="button">套用</button>
+    </div>
+  </dialog>
+
   <dialog id="settingsDialog" class="modal wide-modal">
     <div class="modal-head">
       <h2>系統設定</h2>
@@ -237,6 +264,7 @@
   </dialog>
 
   <script src="firebase-config.js"></script>
+  <script src="phonetic-data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

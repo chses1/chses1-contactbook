@@ -17,26 +17,50 @@ const BOOK_FIELDS = [
   ['note','生活叮嚀'],
   ['teacher','老師的話']
 ];
+const PHONETIC_READINGS = window.CSES_PHONETIC_READINGS || {};
+const PHONETIC_CANDIDATES = window.CSES_PHONETIC_CANDIDATES || {
+  '了':['˙ㄌㄜ','ㄌㄧㄠˇ'],
+  '便':['ㄅㄧㄢˋ','ㄆㄧㄢˊ'],
+  '傳':['ㄔㄨㄢˊ','ㄓㄨㄢˋ'],
+  '和':['ㄏㄜˊ','ㄏㄢˋ','ㄏㄜˋ','ㄏㄨㄛˋ','˙ㄏㄨㄛ','ㄏㄨˊ'],
+  '好':['ㄏㄠˇ','ㄏㄠˋ'],
+  '少':['ㄕㄠˇ','ㄕㄠˋ'],
+  '教':['ㄐㄧㄠˋ','ㄐㄧㄠ'],
+  '會':['ㄏㄨㄟˋ','ㄎㄨㄞˋ','ㄏㄨㄟˇ','ㄍㄨㄟˋ'],
+  '樂':['ㄌㄜˋ','ㄩㄝˋ','ㄧㄠˋ'],
+  '為':['ㄨㄟˊ','ㄨㄟˋ'],
+  '的':['˙ㄉㄜ','ㄉㄧˊ','ㄉㄧˋ'],
+  '種':['ㄓㄨㄥˇ','ㄓㄨㄥˋ'],
+  '空':['ㄎㄨㄥ','ㄎㄨㄥˋ'],
+  '著':['˙ㄓㄜ','ㄓㄨˋ','ㄓㄠ','ㄓㄠˊ','ㄓㄨㄛˊ'],
+  '行':['ㄒㄧㄥˊ','ㄏㄤˊ','ㄒㄧㄥˋ','ㄏㄤˋ'],
+  '都':['ㄉㄡ','ㄉㄨ'],
+  '重':['ㄓㄨㄥˋ','ㄔㄨㄥˊ'],
+  '長':['ㄔㄤˊ','ㄓㄤˇ','ㄓㄤˋ']
+};
 const defaultStudents = Array.from({length:30},(_,i)=>({seat:String(i+1).padStart(2,'0'),name:`${i+1}號`}));
 const $ = id => document.getElementById(id);
 const refs = {
   cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),helpBtn:$('helpBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
-  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),lineHeightDownBtn:$('lineHeightDownBtn'),lineHeightUpBtn:$('lineHeightUpBtn'),lineHeightLabel:$('lineHeightLabel'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
+  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),lineHeightDownBtn:$('lineHeightDownBtn'),lineHeightUpBtn:$('lineHeightUpBtn'),lineHeightLabel:$('lineHeightLabel'),phoneticModeSelect:$('phoneticModeSelect'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
   homeworkCard:$('homeworkCard'),reminderCard:$('reminderCard'),testCard:$('testCard'),noteCard:$('noteCard'),teacherCard:$('teacherCard'),emptyBookMessage:$('emptyBookMessage'),
   homeworkView:$('homeworkView'),reminderView:$('reminderView'),testView:$('testView'),noteView:$('noteView'),teacherView:$('teacherView'),
   bookFieldToggles:$('bookFieldToggles'),homeworkToggle:$('homeworkToggle'),reminderToggle:$('reminderToggle'),testToggle:$('testToggle'),noteToggle:$('noteToggle'),teacherToggle:$('teacherToggle'),
-  homeworkInput:$('homeworkInput'),reminderInput:$('reminderInput'),testInput:$('testInput'),noteInput:$('noteInput'),teacherInput:$('teacherInput'),saveBookBtn:$('saveBookBtn'),copyYesterdayBtn:$('copyYesterdayBtn'),autosaveHint:$('autosaveHint'),
+  homeworkInput:$('homeworkInput'),reminderInput:$('reminderInput'),testInput:$('testInput'),noteInput:$('noteInput'),teacherInput:$('teacherInput'),saveBookBtn:$('saveBookBtn'),copyYesterdayBtn:$('copyYesterdayBtn'),markPhoneticBtn:$('markPhoneticBtn'),autosaveHint:$('autosaveHint'),
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
   statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),allOnTimeBtn:$('allOnTimeBtn'),resetBtn:$('resetBtn'),lastSaved:$('lastSaved'),
   studentDialog:$('studentDialog'),studentTitle:$('studentTitle'),studentDetail:$('studentDetail'),markOnTimeBtn:$('markOnTimeBtn'),markLateBtn:$('markLateBtn'),markLeaveBtn:$('markLeaveBtn'),markAbsentBtn:$('markAbsentBtn'),
-  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput')
+  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),phoneticDialog:$('phoneticDialog'),phoneticChar:$('phoneticChar'),phoneticChoices:$('phoneticChoices'),phoneticInput:$('phoneticInput'),savePhoneticBtn:$('savePhoneticBtn'),clearPhoneticBtn:$('clearPhoneticBtn'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput')
 };
 let state = loadState();
 let selectedDate = dateKey(new Date());
 let editMode = false;
 let selectedSeat = null;
+let selectedPhoneticTarget = null;
+let selectedPhoneticVariant = 0;
+let lastPhoneticSelection = null;
 let isApplyingRemoteState = false;
 let cloudSaveTimer = null;
 const cloud = {
@@ -59,18 +83,30 @@ function getClassLabel(){ return String(state.settings?.className || '').trim() 
 function getClassName(){ return `${getClassLabel()}聯絡簿`; }
 function classLabelFromTitle(title){ return String(title || '').replace(/聯絡簿系統?$/,'').replace(/聯絡簿$/,'').trim(); }
 function getShareId(){ return String(classConfig.shareId || `${cloud.user?.uid || 'teacher'}-${getClassId()}`).replace(/[^\w-]/g,''); }
+function normalizePhoneticMode(settings={}){
+  if(settings.phoneticMode===true || settings.phoneticMode==='precise') return 'font';
+  if(['none','font','zhuyin'].includes(settings.phoneticMode)) return settings.phoneticMode;
+  if(['iansui','bopomofo'].includes(settings.fontFamily)) return 'font';
+  return 'none';
+}
+function normalizeFontFamily(settings={}){
+  const key=settings.fontFamily || 'default';
+  return ['default','rounded','kai'].includes(key) ? key : 'default';
+}
 function normalizeState(s={}){
   return {
     students:Array.isArray(s.students) && s.students.length ? s.students : defaultStudents,
     books:s.books || {},
     bookFields:s.bookFields || {},
+    bookPhonetics:s.bookPhonetics || {},
     attendance:s.attendance || {},
     settings:{
       lateTime:s.settings?.lateTime || '07:50',
       writingMode:s.settings?.writingMode || 'horizontal',
       fontScale:s.settings?.fontScale || 1,
       lineHeightScale:s.settings?.lineHeightScale || 1,
-      fontFamily:s.settings?.fontFamily || 'default',
+      fontFamily:normalizeFontFamily(s.settings || {}),
+      phoneticMode:normalizePhoneticMode(s.settings || {}),
       textAlign:s.settings?.textAlign || 'center',
       className:s.settings?.className || '',
       layout:s.settings?.layout || {}
@@ -94,14 +130,15 @@ function ensureDay(key){
   if(!state.books[key]) state.books[key]={homework:'',reminder:'',test:'',note:'',teacher:''};
   if(!state.bookFields) state.bookFields={};
   if(!state.bookFields[key]) state.bookFields[key]=defaultBookFields();
+  if(!state.bookPhonetics) state.bookPhonetics={};
+  if(!state.bookPhonetics[key]) state.bookPhonetics[key]={};
 }
 function getEnabledBookFields(key=selectedDate){
   ensureDay(key);
   return {...defaultBookFields(),...(state.bookFields[key]||{})};
 }
 function init(){
-  if(state.settings.fontFamily==='bopomofo') state.settings.fontFamily='iansui';
-  refs.datePicker.value=selectedDate; refs.lateTime.value=state.settings.lateTime; refs.fontFamilySelect.value=state.settings.fontFamily||'default'; refs.classNameInput.value=state.settings.className||''; ensureDay(selectedDate);
+  refs.datePicker.value=selectedDate; refs.lateTime.value=state.settings.lateTime; refs.fontFamilySelect.value=state.settings.fontFamily||'default'; refs.phoneticModeSelect.value=state.settings.phoneticMode||'none'; refs.classNameInput.value=state.settings.className||''; ensureDay(selectedDate);
   applyLayout();
   updateLateTimeDisplay();
   wireEvents(); installLayoutResizers(); installResponsiveSizing(); tick(); setInterval(tick,1000); renderAll();
@@ -235,6 +272,7 @@ function wireEvents(){
   refs.fontUpBtn.onclick=()=>changeFontScale(0.1);
   refs.lineHeightDownBtn.onclick=()=>changeLineHeight(-0.1);
   refs.lineHeightUpBtn.onclick=()=>changeLineHeight(0.1);
+  refs.phoneticModeSelect.onchange=()=>setPhoneticMode(refs.phoneticModeSelect.value);
   refs.alignLeftBtn.onclick=()=>setBookAlign('left');
   refs.alignCenterBtn.onclick=()=>setBookAlign('center');
   refs.alignRightBtn.onclick=()=>setBookAlign('right');
@@ -251,8 +289,16 @@ function wireEvents(){
       save();
     });
   });
-  [refs.homeworkInput,refs.reminderInput,refs.testInput,refs.noteInput,refs.teacherInput].forEach(t=>t.addEventListener('input',()=>{writeBookFromInputs(); save(); refs.autosaveHint.textContent='已自動儲存：'+nowTime();}));
+  bookInputEntries().forEach(([,textarea])=>{
+    const remember=()=>capturePhoneticSelection(textarea);
+    textarea.addEventListener('input',()=>{writeBookFromInputs(); remember(); save(); refs.autosaveHint.textContent='已自動儲存：'+nowTime();});
+    ['focus','select','keyup','mouseup','pointerup'].forEach(type=>textarea.addEventListener(type,remember));
+  });
   refs.copyYesterdayBtn.onclick=()=>{ const d=new Date(selectedDate+'T00:00:00'); d.setDate(d.getDate()-1); const y=dateKey(d); if(state.books[y]){ ensureDay(selectedDate); state.books[selectedDate]={...state.books[selectedDate],homework:state.books[y].homework||''}; renderBook(); save(); } else alert('前一天沒有聯絡簿內容'); };
+  refs.markPhoneticBtn.onmousedown=e=>e.preventDefault();
+  refs.markPhoneticBtn.onclick=openPhoneticEditor;
+  refs.savePhoneticBtn.onclick=savePhoneticAnnotation;
+  refs.clearPhoneticBtn.onclick=clearPhoneticAnnotation;
   refs.writingModeBtn.onclick=()=>{ state.settings.writingMode='horizontal'; renderBook(); save(); };
   refs.viewModeBtn.onclick=()=>{ state.settings.writingMode='vertical'; renderBook(); save(); };
   refs.namesBtn.onclick=openNames;
@@ -283,8 +329,37 @@ function toggleFormatPanel(){
 }
 function changeFontScale(delta){ state.settings.fontScale=Math.max(0.75,Math.min(2.2,Number((state.settings.fontScale+delta).toFixed(2)))); applyFormatSettings(); fitBookTextSoon(); save(); }
 function changeLineHeight(delta){ state.settings.lineHeightScale=Math.max(0.9,Math.min(2.2,Number(((state.settings.lineHeightScale||1)+delta).toFixed(2)))); applyFormatSettings(); fitBookTextSoon(); save(); }
+function setPhoneticMode(mode){
+  state.settings.phoneticMode=['none','font','zhuyin'].includes(mode) ? mode : 'none';
+  applyFormatSettings();
+  renderBook();
+  save();
+}
 function applyFontScale(){ applyFormatSettings(); }
-function applyFormatSettings(){ const scale=state.settings.fontScale||1; const lineHeightScale=state.settings.lineHeightScale||1; const fontKey=state.settings.fontFamily||'default'; const family=FONT_STACKS[fontKey]||FONT_STACKS.default; refs.bookDisplay.dataset.fontFamily=fontKey; refs.editor.dataset.fontFamily=fontKey; refs.bookDisplay.style.setProperty('--book-font-scale',scale); refs.editor.style.setProperty('--book-font-scale',scale); refs.bookDisplay.style.setProperty('--book-line-height-scale',lineHeightScale); refs.editor.style.setProperty('--book-line-height-scale',lineHeightScale); refs.bookDisplay.style.setProperty('--book-font-family',family); refs.editor.style.setProperty('--book-font-family',family); refs.fontScaleLabel.textContent=Math.round(scale*100)+'%'; refs.lineHeightLabel.textContent=Math.round(lineHeightScale*100)+'%'; }
+function applyFormatSettings(){
+  const scale=state.settings.fontScale||1;
+  const lineHeightScale=state.settings.lineHeightScale||1;
+  const mode=normalizePhoneticMode(state.settings);
+  state.settings.phoneticMode=mode;
+  const fontKey=normalizeFontFamily(state.settings);
+  state.settings.fontFamily=fontKey;
+  const effectiveFontKey=mode==='font' ? 'iansui' : fontKey;
+  const family=FONT_STACKS[effectiveFontKey]||FONT_STACKS.default;
+  refs.bookDisplay.dataset.fontFamily=effectiveFontKey;
+  refs.editor.dataset.fontFamily=fontKey;
+  refs.bookDisplay.dataset.phoneticMode=mode;
+  refs.editor.dataset.phoneticMode=mode;
+  refs.bookDisplay.style.setProperty('--book-font-scale',scale);
+  refs.editor.style.setProperty('--book-font-scale',scale);
+  refs.bookDisplay.style.setProperty('--book-line-height-scale',lineHeightScale);
+  refs.editor.style.setProperty('--book-line-height-scale',lineHeightScale);
+  refs.bookDisplay.style.setProperty('--book-font-family',family);
+  refs.editor.style.setProperty('--book-font-family',FONT_STACKS[fontKey]||FONT_STACKS.default);
+  refs.fontScaleLabel.textContent=Math.round(scale*100)+'%';
+  refs.lineHeightLabel.textContent=Math.round(lineHeightScale*100)+'%';
+  refs.fontFamilySelect.value=fontKey;
+  refs.phoneticModeSelect.value=mode;
+}
 function setBookAlign(align){ state.settings.textAlign=align; applyBookAlign(); fitBookTextSoon(); save(); }
 function applyBookAlign(){
   const align=['left','center','right'].includes(state.settings.textAlign) ? state.settings.textAlign : 'center';
@@ -297,22 +372,101 @@ function applyBookAlign(){
 }
 function renderAll(){ refs.selectedDateLabel.textContent=displayDate(selectedDate); applyFontScale(); applyBookAlign(); renderBook(); renderAttendance(); }
 function escapeHtml(text){ return String(text).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
-function getBookLines(text){
-  const lines=String(text||'').split('\n').map(line=>line.trim()).filter(Boolean);
-  return lines;
+function isChineseChar(ch){ return /^[\u3400-\u9fff]$/.test(ch); }
+function getBookLineEntries(text){
+  const entries=[];
+  let cursor=0;
+  String(text||'').split('\n').forEach(rawLine=>{
+    const trimmed=rawLine.trim();
+    if(trimmed){
+      const leading=rawLine.match(/^\s*/)?.[0].length || 0;
+      entries.push({text:trimmed,start:cursor+leading});
+    }
+    cursor+=rawLine.length+1;
+  });
+  return entries;
 }
-function formatBookText(lines,startNo=1){
-  return lines.map((line,index)=>`<div class="book-line"><span class="line-no">${startNo+index}.</span><span>${formatInlineText(line)}</span></div>`).join('');
+function formatBookText(entries,startNo=1,fieldKey=''){
+  const mode=state.settings.phoneticMode;
+  return entries.map((line,index)=>{
+    const body=mode==='zhuyin' ? renderZhuyinOnlyText(line.text,fieldKey,line.start) : (mode==='font' ? renderIvsText(line.text,fieldKey,line.start) : formatInlineText(line.text));
+    return `<div class="book-line"><span class="line-no">${startNo+index}.</span><span>${body}</span></div>`;
+  }).join('');
 }
 function normalizeToken(text){
   return String(text).replace(/[Ａ-Ｚａ-ｚ０-９]/g,ch=>String.fromCharCode(ch.charCodeAt(0)-0xFEE0)).replace(/[－—–～〜~]/g,'-').replace(/[．.・‧·]/g,'').replace(/\s+/g,'');
 }
+function isValidZhuyin(text){
+  return /^[\u3105-\u312f\u02d9\u02ca\u02c7\u02cb\u02ea\u02eb\s]+$/.test(String(text||'').trim());
+}
+function compactZhuyin(text){ return String(text||'').replace(/\s+/g,'').trim(); }
+function ivsSelector(variant=0){ return variant>0 ? String.fromCodePoint(0xE01E0+variant) : ''; }
 function formatInlineText(text){
   return String(text).split(/([A-Za-zＡ-Ｚａ-ｚ]+(?:\s*[．.・‧·]?\s*)[0-9０-９]+(?:\s*[－—–～〜~-]\s*[0-9０-９]+)?|[A-Za-zＡ-Ｚａ-ｚ]+|[0-9０-９]+(?:\s*[－—–～〜~-]\s*[0-9０-９]+)*)/g).map(part=>{
     if(!part) return '';
     if(/[A-Za-zＡ-Ｚａ-ｚ0-9０-９]/.test(part)) return `<span class="inline-token">${escapeHtml(normalizeToken(part))}</span>`;
-    const safe=escapeHtml(part);
-    return safe;
+    return escapeHtml(part);
+  }).join('');
+}
+function getValidPhoneticMap(fieldKey,fullText){
+  const day=state.bookPhonetics?.[selectedDate] || {};
+  const list=Array.isArray(day[fieldKey]) ? day[fieldKey] : [];
+  const map=new Map();
+  list.forEach(item=>{
+    if(!item || !Number.isInteger(item.index) || !isValidZhuyin(item.note)) return;
+    if(fullText[item.index]!==item.char) return;
+    map.set(item.index,{note:compactZhuyin(item.note),variant:Number(item.variant)||0});
+  });
+  return map;
+}
+function renderIvsText(text,fieldKey,lineStart){
+  const fullText=state.books[selectedDate]?.[fieldKey] || '';
+  const notes=getValidPhoneticMap(fieldKey,fullText);
+  return String(text).split(/([A-Za-zＡ-Ｚａ-ｚ]+(?:\s*[．.・‧·]?\s*)[0-9０-９]+(?:\s*[－—–～〜~-]\s*[0-9０-９]+)?|[A-Za-zＡ-Ｚａ-ｚ]+|[0-9０-９]+(?:\s*[－—–～〜~-]\s*[0-9０-９]+)*)/g).map((part,partIndex,parts)=>{
+    if(!part) return '';
+    if(/[A-Za-zＡ-Ｚａ-ｚ0-9０-９]/.test(part)) return `<span class="inline-token">${escapeHtml(normalizeToken(part))}</span>`;
+    const before=parts.slice(0,partIndex).join('').length;
+    return [...part].map((ch,i)=>{
+      const sourceIndex=lineStart+before+i;
+      const note=notes.get(sourceIndex);
+      if(note && isChineseChar(ch)) return escapeHtml(ch+ivsSelector(note.variant));
+      return escapeHtml(ch);
+    }).join('');
+  }).join('');
+}
+function zhuyinForChar(ch,note){
+  if(note?.note) return note.note;
+  return PHONETIC_READINGS[ch]?.[0] || '';
+}
+function splitZhuyinTone(note){
+  const text=compactZhuyin(note);
+  const tones=['\u02ca','\u02c7','\u02cb','\u02d9','\u02ea','\u02eb'];
+  let tone='';
+  const body=[...text].filter(ch=>{
+    if(tones.includes(ch)){ tone=ch; return false; }
+    return true;
+  }).join('');
+  return {body,tone};
+}
+function renderZhuyinOnlyToken(note){
+  const {body,tone}=splitZhuyinTone(note);
+  return `<span class="zhuyin-only-token"><span class="zhuyin-body">${escapeHtml(body)}</span><span class="zhuyin-tone">${escapeHtml(tone)}</span></span>`;
+}
+function renderZhuyinOnlyText(text,fieldKey,lineStart){
+  const fullText=state.books[selectedDate]?.[fieldKey] || '';
+  const notes=getValidPhoneticMap(fieldKey,fullText);
+  return String(text).split(/([A-Za-zＡ-Ｚａ-ｚ]+(?:\s*[．.・‧·]?\s*)[0-9０-９]+(?:\s*[－—–～〜~-]\s*[0-9０-９]+)?|[A-Za-zＡ-Ｚａ-ｚ]+|[0-9０-９]+(?:\s*[－—–～〜~-]\s*[0-9０-９]+)*)/g).map((part,partIndex,parts)=>{
+    if(!part) return '';
+    if(/[A-Za-zＡ-Ｚａ-ｚ0-9０-９]/.test(part)) return `<span class="inline-token">${escapeHtml(normalizeToken(part))}</span>`;
+    const before=parts.slice(0,partIndex).join('').length;
+    return [...part].map((ch,i)=>{
+      const sourceIndex=lineStart+before+i;
+      if(isChineseChar(ch)){
+        const note=zhuyinForChar(ch,notes.get(sourceIndex));
+        return note ? renderZhuyinOnlyToken(note) : '';
+      }
+      return escapeHtml(ch);
+    }).join('');
   }).join('');
 }
 function renderBook(){
@@ -333,7 +487,7 @@ function renderBook(){
   refs.editor?.querySelectorAll('[data-book-field-panel]').forEach(panel=>{
     panel.classList.toggle('hidden',!enabled[panel.dataset.bookFieldPanel]);
   });
-  let any=false, visibleCount=0, nextNo=1; items.forEach(([k,card,view,input],order)=>{ const val=(b[k]||'').trim(); const lines=getBookLines(val); const weight=Math.max(1,lines.length); view.innerHTML=formatBookText(lines,nextNo); input.value=b[k]||''; card.style.order=order; card.style.setProperty('--card-weight',weight); card.dataset.lineCount=lines.length; card.style.display=enabled[k]&&lines.length?'':'none'; if(enabled[k]&&lines.length){ any=true; visibleCount++; nextNo+=lines.length; } });
+  let any=false, visibleCount=0, nextNo=1; items.forEach(([k,card,view,input],order)=>{ const val=b[k]||''; const entries=getBookLineEntries(val); const weight=Math.max(1,entries.length); view.innerHTML=formatBookText(entries,nextNo,k); input.value=val; card.style.order=order; card.style.setProperty('--card-weight',weight); card.dataset.lineCount=entries.length; card.style.display=enabled[k]&&entries.length?'':'none'; if(enabled[k]&&entries.length){ any=true; visibleCount++; nextNo+=entries.length; } });
   refs.bookDisplay.dataset.visibleCount=visibleCount;
   refs.emptyBookMessage.style.display= any ? 'none':'grid'; refs.editor.classList.toggle('hidden',!editMode); refs.bookDisplay.classList.toggle('hidden',editMode); refs.editBtn.textContent=editMode?'返回':'編輯'; fitBookTextSoon();
 }
@@ -367,7 +521,142 @@ function fitBookText(){
     title.style.fontSize=Math.min(best*.78,34*scale)+'px';
   });
 }
-function writeBookFromInputs(){ state.books[selectedDate]={...(state.books[selectedDate]||{}),homework:refs.homeworkInput.value,reminder:refs.reminderInput.value,test:refs.testInput.value,note:refs.noteInput.value,teacher:refs.teacherInput.value}; }
+function bookInputEntries(){
+  return [
+    ['homework',refs.homeworkInput],
+    ['reminder',refs.reminderInput],
+    ['test',refs.testInput],
+    ['note',refs.noteInput],
+    ['teacher',refs.teacherInput]
+  ];
+}
+function pruneInvalidPhonetics(dateKeyValue,fieldKey,text){
+  const day=state.bookPhonetics?.[dateKeyValue];
+  const list=day?.[fieldKey];
+  if(!Array.isArray(list)) return;
+  const kept=list.filter(item=>item && Number.isInteger(item.index) && text[item.index]===item.char && isValidZhuyin(item.note));
+  if(kept.length) day[fieldKey]=kept;
+  else delete day[fieldKey];
+}
+function writeBookFromInputs(){
+  ensureDay(selectedDate);
+  state.books[selectedDate]={...(state.books[selectedDate]||{}),homework:refs.homeworkInput.value,reminder:refs.reminderInput.value,test:refs.testInput.value,note:refs.noteInput.value,teacher:refs.teacherInput.value};
+  BOOK_FIELDS.forEach(([field])=>pruneInvalidPhonetics(selectedDate,field,state.books[selectedDate][field]||''));
+}
+function textareaFieldKey(textarea){
+  const found=bookInputEntries().find(([,input])=>input===textarea);
+  return found?.[0] || '';
+}
+function phoneticTargetFromTextarea(textarea){
+  const field=textareaFieldKey(textarea);
+  const value=textarea.value;
+  const start=textarea.selectionStart ?? 0;
+  const end=textarea.selectionEnd ?? start;
+  let index=-1;
+  if(end>start){
+    for(let i=start;i<end;i++){ if(isChineseChar(value[i])){ index=i; break; } }
+  }else if(isChineseChar(value[start])){
+    index=start;
+  }else if(start>0 && isChineseChar(value[start-1])){
+    index=start-1;
+  }
+  if(index<0) return null;
+  return {field,textarea,index,char:value[index]};
+}
+function capturePhoneticSelection(textarea){
+  const target=phoneticTargetFromTextarea(textarea);
+  if(target) lastPhoneticSelection={field:target.field,index:target.index,char:target.char};
+}
+function currentPhoneticTarget(){
+  const activeTextarea=bookInputEntries().map(([,input])=>input).find(input=>input===document.activeElement);
+  const activeTarget=activeTextarea ? phoneticTargetFromTextarea(activeTextarea) : null;
+  if(activeTarget) return activeTarget;
+  if(!lastPhoneticSelection) return null;
+  const textarea=bookInputEntries().find(([field])=>field===lastPhoneticSelection.field)?.[1];
+  if(!textarea) return null;
+  const value=textarea.value;
+  if(value[lastPhoneticSelection.index]!==lastPhoneticSelection.char) return null;
+  return {...lastPhoneticSelection,textarea};
+}
+function existingPhoneticForTarget(target){
+  const list=state.bookPhonetics?.[selectedDate]?.[target.field] || [];
+  return list.find(item=>item.index===target.index && item.char===target.char);
+}
+function renderPhoneticChoices(target,selectedNote=''){
+  const choices=PHONETIC_CANDIDATES[target.char] || [];
+  refs.phoneticChoices.innerHTML='';
+  if(!choices.length){
+    refs.phoneticChoices.innerHTML='<span class="subtle">這個字暫無內建候選，會使用字型預設注音。</span>';
+    selectedPhoneticVariant=0;
+    refs.phoneticInput.value='';
+    return;
+  }
+  choices.forEach((note,variant)=>{
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.className='phonetic-choice';
+    btn.textContent=note;
+    btn.dataset.variant=String(variant);
+    btn.classList.toggle('active',compactZhuyin(selectedNote)===note);
+    btn.onclick=()=>{
+      selectedPhoneticVariant=variant;
+      refs.phoneticInput.value=note;
+      refs.phoneticChoices.querySelectorAll('.phonetic-choice').forEach(el=>el.classList.toggle('active',el===btn));
+    };
+    refs.phoneticChoices.appendChild(btn);
+  });
+  const matchIndex=choices.indexOf(compactZhuyin(selectedNote));
+  selectedPhoneticVariant=matchIndex>=0 ? matchIndex : 0;
+}
+function openPhoneticEditor(){
+  writeBookFromInputs();
+  const target=currentPhoneticTarget();
+  if(!target){ alert('請先在聯絡簿文字框中選取一個中文字，再按「標注破音」。'); return; }
+  selectedPhoneticTarget=target;
+  const existing=existingPhoneticForTarget(target);
+  refs.phoneticChar.textContent=target.char;
+  refs.phoneticInput.value=existing?.note || '';
+  selectedPhoneticVariant=Number(existing?.variant)||0;
+  renderPhoneticChoices(target,existing?.note || '');
+  refs.phoneticDialog.showModal();
+  setTimeout(()=>refs.phoneticInput.focus(),0);
+}
+function savePhoneticAnnotation(){
+  if(!selectedPhoneticTarget) return;
+  const note=compactZhuyin(refs.phoneticInput.value);
+  const choices=PHONETIC_CANDIDATES[selectedPhoneticTarget.char] || [];
+  if(!choices.length){ alert('這個字暫無內建破音候選，會使用字型預設注音。'); return; }
+  if(!isValidZhuyin(note) || !choices.includes(note)){ alert('請先點選一個候選讀音。'); return; }
+  ensureDay(selectedDate);
+  writeBookFromInputs();
+  const target=selectedPhoneticTarget;
+  if((state.books[selectedDate]?.[target.field] || '')[target.index]!==target.char){ alert('文字已變更，請重新選取要標注的字。'); return; }
+  const matchedVariant=choices.indexOf(note);
+  const variant=matchedVariant>=0 ? matchedVariant : selectedPhoneticVariant;
+  const day=state.bookPhonetics[selectedDate];
+  const list=Array.isArray(day[target.field]) ? day[target.field].filter(item=>item.index!==target.index) : [];
+  list.push({index:target.index,char:target.char,note,variant});
+  list.sort((a,b)=>a.index-b.index);
+  day[target.field]=list;
+  state.settings.phoneticMode=state.settings.phoneticMode==='zhuyin' ? 'zhuyin' : 'font';
+  refs.phoneticDialog.close();
+  applyFormatSettings();
+  renderBook();
+  save();
+}
+function clearPhoneticAnnotation(){
+  if(!selectedPhoneticTarget) return;
+  const day=state.bookPhonetics?.[selectedDate];
+  const list=day?.[selectedPhoneticTarget.field];
+  if(Array.isArray(list)){
+    const kept=list.filter(item=>item.index!==selectedPhoneticTarget.index);
+    if(kept.length) day[selectedPhoneticTarget.field]=kept;
+    else delete day[selectedPhoneticTarget.field];
+  }
+  refs.phoneticDialog.close();
+  renderBook();
+  save();
+}
 function teacherWelcomeHint(){
   const name=String(cloud.user?.displayName || cloud.user?.email?.split('@')[0] || '教師').trim();
   return `歡迎${name}老師登入，點擊日期可以預先編輯之後的功課。`;
@@ -446,6 +735,7 @@ function serializeTeacherState(){
     students:state.students,
     books:state.books,
     bookFields:state.bookFields || {},
+    bookPhonetics:state.bookPhonetics || {},
     attendance:state.attendance,
     settings:state.settings,
     className:getClassName(),
@@ -462,6 +752,7 @@ function serializePublicShare(){
     shareAttendance,
     books:{[selectedDate]:state.books[selectedDate] || {homework:'',reminder:'',test:'',note:'',teacher:''}},
     bookFields:{[selectedDate]:getEnabledBookFields()},
+    bookPhonetics:{[selectedDate]:state.bookPhonetics?.[selectedDate] || {}},
     attendance:shareAttendance ? {[selectedDate]:state.attendance[selectedDate] || {}} : {},
     students:shareAttendance ? state.students.map(st=>({seat:st.seat,name:`${st.seat}號`})) : [],
     settings:{
@@ -469,6 +760,7 @@ function serializePublicShare(){
       fontScale:state.settings.fontScale,
       lineHeightScale:state.settings.lineHeightScale,
       fontFamily:state.settings.fontFamily,
+      phoneticMode:'none',
       textAlign:state.settings.textAlign,
       className:state.settings.className || ''
     },
@@ -482,6 +774,7 @@ function applyStateFromCloud(nextState){
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
   refs.lateTime.value=state.settings.lateTime;
   refs.fontFamilySelect.value=state.settings.fontFamily || 'default';
+  refs.phoneticModeSelect.value=state.settings.phoneticMode || 'none';
   refs.classNameInput.value=state.settings.className || '';
   updateLateTimeDisplay();
   applyLayout();
@@ -564,8 +857,9 @@ async function loadParentShare(){
       students:data.students || defaultStudents,
       books:data.books || {},
       bookFields:data.bookFields || {},
+      bookPhonetics:data.bookPhonetics || {},
       attendance:data.attendance || {},
-      settings:{...state.settings,...(data.settings||{}),className:data.settings?.className ?? classLabelFromTitle(data.className)}
+      settings:{...state.settings,...(data.settings||{}),phoneticMode:'none',className:data.settings?.className ?? classLabelFromTitle(data.className)}
     });
     ensureDay(selectedDate);
     refs.classNameInput.value=state.settings.className || '';
@@ -708,6 +1002,7 @@ function showHelp(){
     <div class="help-list">
       <section><h3>Q：如何編輯今天的聯絡簿？</h3><p>A：選好日期後按「編輯聯絡簿」，填寫功課、提醒、考試、攜帶物品或老師的話，再按「完成編輯」。</p></section>
       <section><h3>Q：如何調整聯絡簿顯示？</h3><p>A：按「格式」可切換橫書、直書，也能調整字級、行距、對齊與字體。</p></section>
+      <section><h3>Q：破音字注音怎麼處理？</h3><p>A：按「編輯聯絡簿」，先反白一個中文字，再按「標注破音」，直接點候選讀音即可，例如：重 ㄔㄨㄥˊ、樂 ㄩㄝˋ。格式裡可切換「顯示國字、顯示注音、全注音」。</p></section>
       <section><h3>Q：如何設定學生名單？</h3><p>A：按「名單設定」，可貼上校務系統或教師手冊名冊，也可每行輸入「座號,姓名」。空號會自動略過。</p></section>
       <section><h3>Q：如何登記學生到校？</h3><p>A：點學生座號即可依目前時間記為準時或遲到；再次點同一位學生可改為準時、遲到、請假或未到。</p></section>
       <section><h3>Q：全班都到齊時怎麼操作？</h3><p>A：按「全班準時出席」，確認後會把今天名單內所有學生標記為準時。</p></section>
