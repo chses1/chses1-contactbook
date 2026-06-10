@@ -11,5 +11,5 @@ window.CSES_CLASS_CONFIG = {
   classId: 'default',
   className: '中山國小聯絡簿',
   shareId: '',
-  temperatureProxyUrl: ''
+  temperatureProxyUrl: 'https://chses-zhongshan-temp.chses1.workers.dev/zhongshan-temp'
 };
