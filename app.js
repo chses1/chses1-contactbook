@@ -1,6 +1,8 @@
 const STORAGE_KEY = 'cses-contactbook-attendance-v4';
 const OLD_KEYS = [];
 const CALENDAR_URL = 'https://docs.google.com/spreadsheets/d/1Dbs8Czjl6odsq6HOAz2J_ZU3gXmzm5lU8mSbXoOQD3E/edit?usp=sharing';
+const AIR_DASHBOARD_URL = 'https://tyn-air.tydep.gov.tw/Dashboard/Dashboard.aspx?Id=4';
+const TEMP_REFRESH_MS = 10 * 60 * 1000;
 const FIREBASE_CDN_VERSION = '10.12.5';
 const firebaseConfig = window.CSES_FIREBASE_CONFIG || {};
 const classConfig = window.CSES_CLASS_CONFIG || {};
@@ -43,7 +45,7 @@ const $ = id => document.getElementById(id);
 const refs = {
   cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),helpBtn:$('helpBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
-  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),lineHeightDownBtn:$('lineHeightDownBtn'),lineHeightUpBtn:$('lineHeightUpBtn'),lineHeightLabel:$('lineHeightLabel'),phoneticModeSelect:$('phoneticModeSelect'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
+  clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),schoolTempLink:$('schoolTempLink'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),lineHeightDownBtn:$('lineHeightDownBtn'),lineHeightUpBtn:$('lineHeightUpBtn'),lineHeightLabel:$('lineHeightLabel'),phoneticModeSelect:$('phoneticModeSelect'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
   homeworkCard:$('homeworkCard'),reminderCard:$('reminderCard'),testCard:$('testCard'),noteCard:$('noteCard'),teacherCard:$('teacherCard'),emptyBookMessage:$('emptyBookMessage'),
   homeworkView:$('homeworkView'),reminderView:$('reminderView'),testView:$('testView'),noteView:$('noteView'),teacherView:$('teacherView'),
@@ -142,6 +144,7 @@ function init(){
   applyLayout();
   updateLateTimeDisplay();
   wireEvents(); installLayoutResizers(); installResponsiveSizing(); tick(); setInterval(tick,1000); renderAll();
+  initSchoolTemperature();
   initCloud();
 }
 function updateLateTimeDisplay(){
@@ -252,6 +255,50 @@ function installResponsiveSizing(){
   if(!window.ResizeObserver) return;
   const observer=new ResizeObserver(()=>updateResponsiveSizing());
   [refs.hero,refs.mainGrid,refs.homeworkCard?.closest('.panel'),refs.studentGrid?.closest('.panel')].filter(Boolean).forEach(el=>observer.observe(el));
+}
+function setSchoolTemperature(value){
+  if(!refs.schoolTempLink) return;
+  refs.schoolTempLink.href=AIR_DASHBOARD_URL;
+  refs.schoolTempLink.classList.remove('temp-hot','temp-cool','temp-unknown');
+  const rawValue=String(value ?? '').trim();
+  const temperature=rawValue ? Number(rawValue) : NaN;
+  if(Number.isFinite(temperature)){
+    const label=Number.isInteger(temperature) ? String(temperature) : temperature.toFixed(1);
+    refs.schoolTempLink.textContent=`氣溫 ${label}°C`;
+    refs.schoolTempLink.classList.add(temperature>=28 ? 'temp-hot' : 'temp-cool');
+    refs.schoolTempLink.title='點擊查看中山國小氣溫來源';
+    return;
+  }
+  refs.schoolTempLink.textContent='氣溫暫無資料';
+  refs.schoolTempLink.classList.add('temp-unknown');
+  refs.schoolTempLink.title='點擊查看中山國小氣溫來源';
+}
+function getTemperatureProxyUrl(){
+  return String(classConfig.temperatureProxyUrl || window.CSES_TEMP_PROXY_URL || '').trim();
+}
+function parseProxyTemperature(payload){
+  const rawValue=String(payload?.temperature ?? '').trim();
+  if(!/^-?\d+(?:\.\d+)?$/.test(rawValue)) return null;
+  const value=Number(rawValue);
+  return Number.isFinite(value) && value>0 && value<=60 ? value : null;
+}
+async function fetchSchoolTemperature(){
+  const proxyUrl=getTemperatureProxyUrl();
+  if(!proxyUrl){ setSchoolTemperature(null); return; }
+  try{
+    const response=await fetch(proxyUrl,{cache:'no-store'});
+    if(!response.ok) throw new Error(`temperature source ${response.status}`);
+    const temperature=parseProxyTemperature(await response.json());
+    if(temperature===null) throw new Error('temperature not found');
+    setSchoolTemperature(temperature);
+  }catch(err){
+    setSchoolTemperature(null);
+  }
+}
+function initSchoolTemperature(){
+  setSchoolTemperature(null);
+  fetchSchoolTemperature();
+  setInterval(fetchSchoolTemperature,TEMP_REFRESH_MS);
 }
 function tick(){
   const n=new Date();

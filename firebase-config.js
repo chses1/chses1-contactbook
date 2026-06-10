@@ -10,5 +10,6 @@ window.CSES_FIREBASE_CONFIG = {
 window.CSES_CLASS_CONFIG = {
   classId: 'default',
   className: '中山國小聯絡簿',
-  shareId: ''
+  shareId: '',
+  temperatureProxyUrl: ''
 };

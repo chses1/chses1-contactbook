@@ -30,6 +30,20 @@ firebase-config.js 說明：
 - classConfig.classId：班級代號，英文、數字、底線或連字號，例如 class-601。
 - classConfig.className：顯示給家長看的班級名稱。
 - classConfig.shareId：可留空，系統會用老師帳號與班級代號產生；若要固定連結，可填自訂代碼，例如 cses-601-2026。
+- classConfig.temperatureProxyUrl：Cloudflare Worker 氣溫代理網址。部署 workers/zhongshan-temp-worker.js 後，貼上 Worker 網址，例如 https://chses-zhongshan-temp.帳號.workers.dev/zhongshan-temp。
+
+中山國小氣溫代理設定：
+1. 到 https://dash.cloudflare.com/ 建立或登入 Cloudflare 帳號。
+2. 進入 Workers & Pages，建立 Worker。
+3. 將 workers/zhongshan-temp-worker.js 的內容貼上並部署。
+4. 複製 Worker 網址，建議使用 /zhongshan-temp 路徑。
+5. 將網址填入 firebase-config.js 的 classConfig.temperatureProxyUrl。
+6. 重新開啟聯絡簿，頁首氣溫會讀取官方中山國小儀表板 Id=4 的氣溫值。
+
+若使用指令部署：
+1. 安裝 Node.js 後，在本資料夾執行 npx wrangler login。
+2. 執行 npx wrangler deploy。
+3. 將部署後顯示的 workers.dev 網址加上 /zhongshan-temp，填入 firebase-config.js。
 
 本版修改：
 - 新增教師 Google 登入入口。
