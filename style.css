@@ -420,6 +420,10 @@
 .settings-body{padding:18px 22px 22px}
 .class-name-field{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:10px;padding:10px 12px;border:1px solid #dbe7f5;border-radius:12px;background:#f8fbff;color:#17315c;font-weight:950}
 .class-name-field input{width:100%;height:42px;border:1px solid #cbd9eb;border-radius:10px;background:#fff;padding:0 12px;color:#13284c;font-size:17px;font-weight:900}
+.wake-lock-status{padding:10px 12px;border:1px solid #cbd9eb;border-radius:12px;background:#f8fbff;color:#334155;font-size:15px;font-weight:900;text-align:center}
+.wake-lock-status[data-status="active"]{background:#ecfdf5;border-color:#86efac;color:#166534}
+.wake-lock-status[data-status="failed"],.wake-lock-status[data-status="unsupported"]{background:#fff7ed;border-color:#fdba74;color:#9a3412}
+.wake-lock-status[data-status="hidden"],.wake-lock-status[data-status="disabled"]{background:#f1f5f9;border-color:#cbd5e1;color:#475569}
 .settings-cloud-bar{display:block;padding:0;border:0;background:transparent;box-shadow:none}
 .settings-cloud-bar .cloud-actions{display:grid;grid-template-columns:1fr;gap:10px;justify-content:stretch}
 .settings-cloud-bar .cloud-btn,.settings-cloud-bar .share-attendance-toggle{width:100%;min-height:46px;justify-content:center;font-size:16px}

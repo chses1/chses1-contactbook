@@ -4,6 +4,8 @@
 1. 解壓縮 zip 檔。
 2. 用 Chrome 或 Edge 開啟 index.html。
 3. 建議點右上角「全螢幕」，搭配教室觸控式大螢幕使用。
+4. 聯絡簿會在一般分頁可見時自動嘗試保持螢幕喚醒，不必進入全螢幕才生效。
+5. 若 Windows 電源政策、省電模式或瀏覽器不支援導致喚醒失敗，請到 Windows「螢幕與睡眠」和「螢幕保護程式」調整關閉螢幕與睡眠時間。
 
 Firebase 雲端使用方式：
 1. 到 https://console.firebase.google.com/ 建立 Firebase 專案。

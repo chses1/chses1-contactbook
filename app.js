@@ -54,7 +54,7 @@ const refs = {
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
   statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),allOnTimeBtn:$('allOnTimeBtn'),resetBtn:$('resetBtn'),lastSaved:$('lastSaved'),
   studentDialog:$('studentDialog'),studentTitle:$('studentTitle'),studentDetail:$('studentDetail'),markOnTimeBtn:$('markOnTimeBtn'),markLateBtn:$('markLateBtn'),markLeaveBtn:$('markLeaveBtn'),markAbsentBtn:$('markAbsentBtn'),
-  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),phoneticDialog:$('phoneticDialog'),phoneticChar:$('phoneticChar'),phoneticChoices:$('phoneticChoices'),phoneticInput:$('phoneticInput'),savePhoneticBtn:$('savePhoneticBtn'),clearPhoneticBtn:$('clearPhoneticBtn'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput')
+  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),phoneticDialog:$('phoneticDialog'),phoneticChar:$('phoneticChar'),phoneticChoices:$('phoneticChoices'),phoneticInput:$('phoneticInput'),savePhoneticBtn:$('savePhoneticBtn'),clearPhoneticBtn:$('clearPhoneticBtn'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput'),wakeLockStatus:$('wakeLockStatus')
 };
 let state = loadState();
 let selectedDate = dateKey(new Date());
@@ -65,6 +65,10 @@ let selectedPhoneticVariant = 0;
 let lastPhoneticSelection = null;
 let isApplyingRemoteState = false;
 let cloudSaveTimer = null;
+let screenWakeLock = null;
+let wakeLockWanted = false;
+let wakeLockStatus = 'idle';
+let wakeLockRetryTimer = null;
 const cloud = {
   configured:isFirebaseConfigured(),
   parentShareId:new URLSearchParams(location.search).get('share') || '',
@@ -144,6 +148,7 @@ function init(){
   applyLayout();
   updateLateTimeDisplay();
   wireEvents(); installLayoutResizers(); installResponsiveSizing(); tick(); setInterval(tick,1000); renderAll();
+  installScreenWakeLock();
   initSchoolTemperature();
   initCloud();
 }
@@ -255,6 +260,91 @@ function installResponsiveSizing(){
   if(!window.ResizeObserver) return;
   const observer=new ResizeObserver(()=>updateResponsiveSizing());
   [refs.hero,refs.mainGrid,refs.homeworkCard?.closest('.panel'),refs.studentGrid?.closest('.panel')].filter(Boolean).forEach(el=>observer.observe(el));
+}
+function wakeLockMessage(status=wakeLockStatus){
+  const messages={
+    idle:'螢幕喚醒準備中',
+    active:'螢幕保持喚醒中',
+    hidden:'分頁在背景，已暫停螢幕喚醒',
+    unsupported:'此瀏覽器不支援螢幕喚醒',
+    failed:'螢幕喚醒失敗，請確認瀏覽器與 Windows 電源設定',
+    disabled:'家長分享頁不啟用螢幕喚醒'
+  };
+  return messages[status] || messages.idle;
+}
+function updateWakeLockUi(status=wakeLockStatus){
+  wakeLockStatus=status;
+  const message=wakeLockMessage(status);
+  if(refs.wakeLockStatus){
+    refs.wakeLockStatus.textContent=message;
+    refs.wakeLockStatus.dataset.status=status;
+  }
+  if(refs.fullscreenBtn){
+    refs.fullscreenBtn.title=message;
+    refs.fullscreenBtn.dataset.wakeStatus=status;
+  }
+}
+function shouldKeepScreenAwake(){
+  return wakeLockWanted && !cloud.parentShareId && document.visibilityState==='visible';
+}
+async function releaseScreenWakeLock(status=document.visibilityState==='visible'?'idle':'hidden'){
+  const wakeLock=screenWakeLock;
+  screenWakeLock=null;
+  if(wakeLock){
+    try{ await wakeLock.release(); }
+    catch(err){ console.warn('Unable to release screen wake lock.',err); }
+  }
+  updateWakeLockUi(status);
+}
+function scheduleWakeLockRetry(){
+  clearTimeout(wakeLockRetryTimer);
+  wakeLockRetryTimer=setTimeout(()=>syncScreenWakeLock(),1200);
+}
+async function requestScreenWakeLock(){
+  if(!shouldKeepScreenAwake()){
+    await releaseScreenWakeLock(cloud.parentShareId?'disabled':'hidden');
+    return;
+  }
+  if(!('wakeLock' in navigator)){
+    updateWakeLockUi('unsupported');
+    return;
+  }
+  try{
+    const wakeLock=await navigator.wakeLock.request('screen');
+    if(!shouldKeepScreenAwake()){
+      await wakeLock.release();
+      return;
+    }
+    if(screenWakeLock && screenWakeLock!==wakeLock) await releaseScreenWakeLock('idle');
+    screenWakeLock=wakeLock;
+    updateWakeLockUi('active');
+    wakeLock.addEventListener('release',()=>{
+      if(screenWakeLock===wakeLock){
+        screenWakeLock=null;
+        updateWakeLockUi(document.visibilityState==='visible'?'idle':'hidden');
+        if(shouldKeepScreenAwake()) scheduleWakeLockRetry();
+      }
+    });
+  }catch(err){
+    console.warn('Unable to request screen wake lock.',err);
+    updateWakeLockUi('failed');
+  }
+}
+async function syncScreenWakeLock(){
+  if(shouldKeepScreenAwake()) await requestScreenWakeLock();
+  else await releaseScreenWakeLock(cloud.parentShareId?'disabled':'hidden');
+}
+function installScreenWakeLock(){
+  wakeLockWanted=!cloud.parentShareId;
+  updateWakeLockUi(wakeLockWanted?'idle':'disabled');
+  if(!wakeLockWanted) return;
+  syncScreenWakeLock();
+  document.addEventListener('visibilitychange',syncScreenWakeLock);
+  const retryAfterGesture=()=>{
+    if(wakeLockStatus==='failed' || wakeLockStatus==='idle') syncScreenWakeLock();
+  };
+  document.addEventListener('pointerdown',retryAfterGesture);
+  document.addEventListener('keydown',retryAfterGesture);
 }
 function setSchoolTemperature(value){
   if(!refs.schoolTempLink) return;
@@ -1054,6 +1144,7 @@ function showHelp(){
       <section><h3>Q：如何登記學生到校？</h3><p>A：點學生座號即可依目前時間記為準時或遲到；再次點同一位學生可改為準時、遲到、請假或未到。</p></section>
       <section><h3>Q：全班都到齊時怎麼操作？</h3><p>A：按「全班準時出席」，確認後會把今天名單內所有學生標記為準時。</p></section>
       <section><h3>Q：如何分享給家長？</h3><p>A：登入教師 Google 帳號後按「更新家長分享」，再把連結傳給家長。需要顯示座號出席狀態時，先勾選「分享學生出席」。</p></section>
+      <section><h3>Q：一般分頁會避免螢幕休眠嗎？</h3><p>A：教師主畫面開著且分頁可見時，系統會自動嘗試保持螢幕喚醒；若瀏覽器不支援或 Windows 電源政策阻擋，仍需調整「螢幕與睡眠」和「螢幕保護程式」。</p></section>
       <section><h3>Q：班級名稱在哪裡設定？</h3><p>A：在「系統設定」填入班級名稱，畫面與家長分享標題會顯示為該班級的聯絡簿。</p></section>
     </div>
   `);
