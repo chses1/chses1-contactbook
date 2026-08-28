@@ -226,16 +226,16 @@
 .vertical-mode[data-font-family="iansui"] .book-card>div:not(.circle-icon){gap:24px}
 .vertical-mode[data-visible-count="1"] .book-card{flex:1}
 .vertical-mode[data-visible-count="1"] .book-card>div:not(.circle-icon){gap:24px}
-.vertical-mode[data-visible-count="1"] .book-text{gap:.7em}
+.vertical-mode[data-visible-count="1"] .book-text{gap:calc(.7em * var(--book-line-height-scale,1))}
 .vertical-mode[data-visible-count="1"][data-font-family="iansui"] .book-card>div:not(.circle-icon){gap:30px}
 .vertical-mode:not([data-visible-count="1"]) .circle-icon{display:none}
 .vertical-mode:not([data-visible-count="1"]) .book-card{padding:12px 10px}
 .vertical-mode:not([data-visible-count="1"]) .book-card h2{font-size:calc(18px * var(--book-font-scale))!important;line-height:1.05;min-width:1.1em}
 .vertical-mode:not([data-visible-count="1"]) .book-card>div:not(.circle-icon){gap:12px}
-.vertical-mode:not([data-visible-count="1"]) .book-text{gap:.42em}
+.vertical-mode:not([data-visible-count="1"]) .book-text{gap:calc(.42em * var(--book-line-height-scale,1))}
 .vertical-mode[data-font-family="iansui"]:not([data-visible-count="1"]) .book-card>div:not(.circle-icon){gap:calc(20px * var(--book-font-scale))}
 .vertical-mode[data-font-family="iansui"]:not([data-visible-count="1"]) .book-card h2{min-width:1.35em}
-.vertical-mode[data-font-family="iansui"] .book-text{gap:.7em}
+.vertical-mode[data-font-family="iansui"] .book-text{gap:calc(.7em * var(--book-line-height-scale,1))}
 .vertical-mode[data-font-family="iansui"] .book-line{min-width:1.85em}
 .vertical-mode[data-font-family="iansui"] .book-line>span:last-child{min-width:1.65em}
 
