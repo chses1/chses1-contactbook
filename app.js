@@ -54,7 +54,7 @@ const refs = {
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
   statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),allOnTimeBtn:$('allOnTimeBtn'),resetBtn:$('resetBtn'),lastSaved:$('lastSaved'),
   studentDialog:$('studentDialog'),studentTitle:$('studentTitle'),studentDetail:$('studentDetail'),markOnTimeBtn:$('markOnTimeBtn'),markLateBtn:$('markLateBtn'),markLeaveBtn:$('markLeaveBtn'),markAbsentBtn:$('markAbsentBtn'),
-  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),phoneticDialog:$('phoneticDialog'),phoneticChar:$('phoneticChar'),phoneticChoices:$('phoneticChoices'),phoneticInput:$('phoneticInput'),savePhoneticBtn:$('savePhoneticBtn'),clearPhoneticBtn:$('clearPhoneticBtn'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput'),wakeLockStatus:$('wakeLockStatus')
+  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),phoneticDialog:$('phoneticDialog'),phoneticChar:$('phoneticChar'),phoneticChoices:$('phoneticChoices'),phoneticInput:$('phoneticInput'),savePhoneticBtn:$('savePhoneticBtn'),clearPhoneticBtn:$('clearPhoneticBtn'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput'),wakeLockStatus:$('wakeLockStatus'),clearAllAttendanceBtn:$('clearAllAttendanceBtn')
 };
 let state = loadState();
 let selectedDate = dateKey(new Date());
@@ -447,6 +447,7 @@ function wireEvents(){
   refs.recordsBtn.onclick=showRecords;
   refs.settingsBtn.onclick=()=>refs.settingsDialog.showModal();
   refs.classNameInput.oninput=()=>{ state.settings.className=refs.classNameInput.value.trim(); refs.lunarText.textContent=getClassName(); save(); };
+  refs.clearAllAttendanceBtn.onclick=clearAllAttendanceRecords;
   refs.signInBtn.onclick=signInTeacher;
   refs.signOutBtn.onclick=signOutTeacher;
   refs.publishShareBtn.onclick=publishParentShare;
@@ -1045,6 +1046,17 @@ function markAllOnTime(){
   });
   renderAttendance();
   save();
+}
+function clearAllAttendanceRecords(){
+  const count=Object.keys(state.attendance || {}).length;
+  const detail=count ? `目前共有 ${count} 天出席紀錄。` : '目前沒有出席紀錄。';
+  const ok=confirm(`${detail}\n\n清除所有出席紀錄會刪除過去所有日期的簽到、遲到與請假資料。\n\n建議老師於學期開始前使用。\n\n確定要清除所有出席紀錄嗎？`);
+  if(!ok) return;
+  state.attendance={};
+  ensureDay(selectedDate);
+  renderAttendance();
+  save();
+  showInfo('已清除所有出席紀錄','<p>所有日期的出席紀錄已清除。聯絡簿內容、學生名單與系統設定都已保留。</p>');
 }
 function openStudent(seat){ selectedSeat=seat; const st=state.students.find(s=>s.seat===seat); const r=state.attendance[selectedDate][seat]; const stats=getStudentStats(seat); refs.studentTitle.textContent=`${seat}號 ${st?.name||''}`; refs.studentDetail.innerHTML=`<p>今天狀態：<b>${statusText(r)}</b></p><p>今日記錄時間：<b>${r?.time||'--'}</b></p><hr><p>累計準時：${stats.ontime} 次</p><p>累計遲到：${stats.late} 次</p><p>累計請假：${stats.leave} 次</p>`; refs.studentDialog.showModal(); }
 function getStudentStats(seat){ const out={ontime:0,late:0,leave:0}; Object.values(state.attendance).forEach(day=>{ const r=day[seat]; if(r?.status&&out[r.status]!==undefined) out[r.status]++; }); return out; }
