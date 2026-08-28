@@ -1,6 +1,6 @@
 const STORAGE_KEY = 'cses-contactbook-attendance-v4';
 const OLD_KEYS = [];
-const CALENDAR_URL = 'https://docs.google.com/spreadsheets/d/1Dbs8Czjl6odsq6HOAz2J_ZU3gXmzm5lU8mSbXoOQD3E/edit?usp=sharing';
+const CALENDAR_URL = 'https://docs.google.com/spreadsheets/d/1ZM1uJnE8VpXP-l4fADQ1fBhnINAu_ogUOjLC_BYznQs/edit?gid=0#gid=0';
 const AIR_DASHBOARD_URL = 'https://tyn-air.tydep.gov.tw/Dashboard/Dashboard.aspx?Id=4';
 const TEMP_REFRESH_MS = 10 * 60 * 1000;
 const FIREBASE_CDN_VERSION = '10.12.5';
