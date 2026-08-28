@@ -968,7 +968,10 @@ async function publishParentShare(){
     showInfo('家長分享已更新',`<p>家長連結已複製，可傳給家長：</p><p><b>${escapeHtml(parentShareLink())}</b></p><p>${shareNote}</p>`);
   }catch(err){
     console.error(err);
-    showInfo('分享失敗','<p>無法更新家長分享，請確認 Firestore 規則已發布，且目前已登入教師帳號。</p>');
+    const message=err?.code==='permission-denied'
+      ? '無法更新家長分享：目前線上的 Firestore 規則尚未允許新版分享欄位，請發布更新後的 firestore.rules。'
+      : '無法更新家長分享，請稍後再試。';
+    showInfo('分享失敗',`<p>${escapeHtml(message)}</p>`);
   }
 }
 function parentShareLink(){
