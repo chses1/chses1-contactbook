@@ -43,7 +43,7 @@ const PHONETIC_CANDIDATES = window.CSES_PHONETIC_CANDIDATES || {
 const defaultStudents = Array.from({length:30},(_,i)=>({seat:String(i+1).padStart(2,'0'),name:`${i+1}號`}));
 const $ = id => document.getElementById(id);
 const refs = {
-  cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),helpBtn:$('helpBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
+  cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),quickPublishShareBtn:$('quickPublishShareBtn'),copyShareBtn:$('copyShareBtn'),helpBtn:$('helpBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
   clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),schoolTempLink:$('schoolTempLink'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),lineHeightDownBtn:$('lineHeightDownBtn'),lineHeightUpBtn:$('lineHeightUpBtn'),lineHeightLabel:$('lineHeightLabel'),phoneticModeSelect:$('phoneticModeSelect'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
@@ -77,7 +77,8 @@ const cloud = {
   db:null,
   provider:null,
   api:null,
-  unsubscribe:null
+  unsubscribe:null,
+  parentShareLoaded:false
 };
 
 function dateKey(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
@@ -147,7 +148,9 @@ function init(){
   refs.datePicker.value=selectedDate; refs.lateTime.value=state.settings.lateTime; refs.fontFamilySelect.value=state.settings.fontFamily||'default'; refs.phoneticModeSelect.value=state.settings.phoneticMode||'none'; refs.classNameInput.value=state.settings.className||''; ensureDay(selectedDate);
   applyLayout();
   updateLateTimeDisplay();
-  wireEvents(); installLayoutResizers(); installResponsiveSizing(); tick(); setInterval(tick,1000); renderAll();
+  wireEvents(); installLayoutResizers(); installResponsiveSizing(); tick(); setInterval(tick,1000);
+  if(cloud.parentShareId) renderParentShareLoading();
+  else renderAll();
   installScreenWakeLock();
   initSchoolTemperature();
   initCloud();
@@ -396,7 +399,7 @@ function tick(){
   refs.clock.setAttribute('aria-label',`${hh}:${mm}:${ss}`);
   refs.clockHours.textContent=hh; refs.clockMinutes.textContent=mm; refs.clockSeconds.textContent=ss;
   refs.dateFull.textContent=`${n.getFullYear()}年${String(n.getMonth()+1).padStart(2,'0')}月${String(n.getDate()).padStart(2,'0')}日`; refs.weekText.textContent=`星期${'日一二三四五六'[n.getDay()]}`;
-  refs.lunarText.textContent=getClassName();
+  if(!cloud.parentShareId || cloud.parentShareLoaded) refs.lunarText.textContent=getClassName();
   const hm=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; refs.timeStatus.textContent= hm<=state.settings.lateTime ? '準時時段 ✅' : '遲到時段 ⚠️';
 }
 function wireEvents(){
@@ -451,6 +454,7 @@ function wireEvents(){
   refs.signInBtn.onclick=signInTeacher;
   refs.signOutBtn.onclick=signOutTeacher;
   refs.publishShareBtn.onclick=publishParentShare;
+  if(refs.quickPublishShareBtn) refs.quickPublishShareBtn.onclick=publishParentShare;
   refs.copyShareBtn.onclick=copyParentShareLink;
   refs.helpBtn.onclick=showHelp;
   document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
@@ -509,6 +513,26 @@ function applyBookAlign(){
   });
 }
 function renderAll(){ refs.selectedDateLabel.textContent=displayDate(selectedDate); applyFontScale(); applyBookAlign(); renderBook(); renderAttendance(); }
+function renderParentShareLoading(){
+  document.body.classList.add('parent-share-mode');
+  refs.selectedDateLabel.textContent='正在讀取...';
+  refs.lunarText.textContent='正在讀取老師分享的聯絡簿';
+  refs.bookDisplay.classList.remove('hidden');
+  BOOK_FIELDS.forEach(([key])=>{
+    const card=refs[`${key}Card`];
+    const view=refs[`${key}View`];
+    if(card) card.style.display='none';
+    if(view) view.textContent='';
+  });
+  refs.emptyBookMessage.textContent='正在讀取老師分享的聯絡簿...';
+  refs.emptyBookMessage.style.display='grid';
+  refs.editor.classList.add('hidden');
+  refs.studentGrid.innerHTML='';
+  refs.arrivedCount.textContent='0';
+  refs.lateCount.textContent='0';
+  refs.leaveCount.textContent='0';
+  refs.absentCount.textContent='0';
+}
 function escapeHtml(text){ return String(text).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch])); }
 function isChineseChar(ch){ return /^[\u3400-\u9fff]$/.test(ch); }
 function getBookLineEntries(text){
@@ -610,6 +634,7 @@ function renderZhuyinOnlyText(text,fieldKey,lineStart){
 function renderBook(){
   ensureDay(selectedDate); const b=state.books[selectedDate]||{};
   const enabled=getEnabledBookFields();
+  refs.emptyBookMessage.textContent='今天尚未填寫聯絡簿';
   refs.bookDisplay.closest('.contact-panel')?.classList.toggle('editing',editMode);
   applyBookAlign();
   refs.bookDisplay.classList.toggle('vertical-mode',state.settings.writingMode==='vertical'); refs.bookDisplay.classList.toggle('horizontal-mode',state.settings.writingMode!=='vertical');
@@ -805,6 +830,7 @@ function updateCloudUi(message){
   refs.signInBtn.disabled=shareMode || !cloud.configured || !!cloud.user;
   refs.signOutBtn.disabled=shareMode || !cloud.user;
   refs.publishShareBtn.disabled=shareMode || !cloud.user;
+  if(refs.quickPublishShareBtn) refs.quickPublishShareBtn.disabled=shareMode || !cloud.user;
   refs.copyShareBtn.disabled=shareMode || !cloud.user;
   if(refs.shareAttendanceToggle) refs.shareAttendanceToggle.disabled=shareMode || !cloud.user;
   if(shareMode){
@@ -992,6 +1018,7 @@ async function loadParentShare(){
     if(!snap.exists()){ updateCloudUi('找不到這個分享連結，請向老師確認連結是否正確。'); return; }
     const data=snap.data();
     selectedDate=data.sharedDate || Object.keys(data.books||{}).sort().pop() || selectedDate;
+    cloud.parentShareLoaded=true;
     refs.datePicker.value=selectedDate;
     document.body.classList.toggle('share-attendance-enabled',!!data.shareAttendance);
     state=normalizeState({

@@ -251,7 +251,7 @@
 .vertical-mode .book-card>div:not(.circle-icon){width:100%}
 
 /* compact contact-book controls */
-.contact-panel .panel-head{align-items:center;gap:8px}.contact-panel h1{font-size:32px;white-space:nowrap}.contact-panel .panel-head .subtle{display:none}.contact-panel .head-actions{display:grid;grid-template-columns:158px 64px 64px 64px;gap:8px;align-items:center}.contact-panel .head-actions input[type=date]{width:158px;height:46px;font-size:17px;padding:0 10px}.contact-panel .head-actions button{width:64px;height:46px;padding:0;font-size:17px;white-space:nowrap;line-height:1}.contact-panel .font-toolbar{justify-content:flex-end;gap:8px;padding:10px;flex-wrap:wrap}.contact-panel .font-btn{width:58px;min-width:58px}.contact-panel #fontScaleLabel,.contact-panel #lineHeightLabel{width:58px;text-align:center;white-space:nowrap}.contact-panel .font-select-label{margin-left:0}.contact-panel .font-select{width:160px}.contact-panel .small-btn{width:64px;height:40px;padding:0;white-space:nowrap}
+.contact-panel .panel-head{align-items:center;gap:8px}.contact-panel h1{font-size:32px;white-space:nowrap}.contact-panel .panel-head .subtle{display:none}.contact-panel .head-actions{display:grid;grid-template-columns:158px 64px 64px 128px;gap:8px;align-items:center}.contact-panel .head-actions input[type=date]{width:158px;height:46px;font-size:17px;padding:0 10px}.contact-panel .head-actions button{width:64px;height:46px;padding:0;font-size:17px;white-space:nowrap;line-height:1}.contact-panel .head-actions .quick-publish-btn{width:128px;font-size:15px}.contact-panel .font-toolbar{justify-content:flex-end;gap:8px;padding:10px;flex-wrap:wrap}.contact-panel .font-btn{width:58px;min-width:58px}.contact-panel #fontScaleLabel,.contact-panel #lineHeightLabel{width:58px;text-align:center;white-space:nowrap}.contact-panel .font-select-label{margin-left:0}.contact-panel .font-select{width:160px}.contact-panel .small-btn{width:64px;height:40px;padding:0;white-space:nowrap}
 
 /* v4 student buttons: seat number only */
 .student-btn{position:relative}.student-btn .seat{font-size:36px}.student-btn .name,.student-btn .status{display:none!important}.student-btn::after{content:"";position:absolute;left:12px;bottom:10px;width:12px;height:12px;border-radius:50%;background:#a8b2c2}.student-btn.ontime::after{background:#15a65a}.student-btn.late::after{background:#f59e0b}.student-btn.leave::after{background:#1d6ee8}
@@ -411,8 +411,9 @@
 /* space-saving controls */
 .settings-cloud-bar{margin:0;box-shadow:none}
 .settings-body{padding:18px 22px;display:grid;gap:14px}
-.contact-panel .head-actions{grid-template-columns:158px 82px 82px}
+.contact-panel .head-actions{grid-template-columns:158px 82px 82px 132px}
 .contact-panel .head-actions #editBtn,.contact-panel .head-actions #formatBtn{width:82px}
+.contact-panel .head-actions #quickPublishShareBtn{width:132px}
 .contact-panel #formatBtn.active{background:#1167df;color:#fff}
 .contact-panel .font-toolbar{margin-top:8px;justify-content:flex-start}
 .contact-panel .font-toolbar #writingModeBtn,.contact-panel .font-toolbar #viewModeBtn{width:64px;height:40px;padding:0;font-size:16px;line-height:1}
@@ -449,7 +450,7 @@
 
 @media(max-width:1320px){
   .contact-panel .head-actions{
-    grid-template-columns:minmax(138px,1.6fr) repeat(2,minmax(72px,1fr));
+    grid-template-columns:minmax(138px,1.4fr) repeat(2,minmax(72px,1fr)) minmax(118px,1.3fr);
     width:100%;
   }
   .contact-panel .head-actions input[type=date],.contact-panel .head-actions button{width:100%}
@@ -501,6 +502,7 @@
 @media(max-width:900px){
   .settings-cloud-bar{align-items:stretch}
   .contact-panel .head-actions{grid-template-columns:1fr 1fr 1fr;align-self:stretch}
+  .contact-panel .head-actions #quickPublishShareBtn{grid-column:1/-1}
   .contact-panel .head-actions input[type=date],.contact-panel .head-actions button{width:100%}
 }
 
