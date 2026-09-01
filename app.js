@@ -43,7 +43,7 @@ const PHONETIC_CANDIDATES = window.CSES_PHONETIC_CANDIDATES || {
 const defaultStudents = Array.from({length:30},(_,i)=>({seat:String(i+1).padStart(2,'0'),name:`${i+1}號`}));
 const $ = id => document.getElementById(id);
 const refs = {
-  cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),quickPublishShareBtn:$('quickPublishShareBtn'),copyShareBtn:$('copyShareBtn'),helpBtn:$('helpBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
+  cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),helpBtn:$('helpBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
   shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
   clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),schoolTempLink:$('schoolTempLink'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),lineHeightDownBtn:$('lineHeightDownBtn'),lineHeightUpBtn:$('lineHeightUpBtn'),lineHeightLabel:$('lineHeightLabel'),phoneticModeSelect:$('phoneticModeSelect'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
@@ -420,7 +420,7 @@ function wireEvents(){
   refs.formatBtn.onclick=()=>toggleFormatPanel();
 
   refs.editBtn.onclick=()=>{ editMode=!editMode; renderBook(); };
-  refs.saveBookBtn.onclick=()=>{ writeBookFromInputs(); editMode=false; renderBook(); save(); };
+  refs.saveBookBtn.onclick=saveBookAndPublishShare;
   refs.bookFieldToggles?.querySelectorAll('input[data-book-field]').forEach(toggle=>{
     toggle.addEventListener('change',()=>{
       ensureDay(selectedDate);
@@ -454,7 +454,6 @@ function wireEvents(){
   refs.signInBtn.onclick=signInTeacher;
   refs.signOutBtn.onclick=signOutTeacher;
   refs.publishShareBtn.onclick=publishParentShare;
-  if(refs.quickPublishShareBtn) refs.quickPublishShareBtn.onclick=publishParentShare;
   refs.copyShareBtn.onclick=copyParentShareLink;
   refs.helpBtn.onclick=showHelp;
   document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
@@ -830,7 +829,6 @@ function updateCloudUi(message){
   refs.signInBtn.disabled=shareMode || !cloud.configured || !!cloud.user;
   refs.signOutBtn.disabled=shareMode || !cloud.user;
   refs.publishShareBtn.disabled=shareMode || !cloud.user;
-  if(refs.quickPublishShareBtn) refs.quickPublishShareBtn.disabled=shareMode || !cloud.user;
   refs.copyShareBtn.disabled=shareMode || !cloud.user;
   if(refs.shareAttendanceToggle) refs.shareAttendanceToggle.disabled=shareMode || !cloud.user;
   if(shareMode){
@@ -986,19 +984,50 @@ async function signOutTeacher(){
   if(!cloud.auth) return;
   await cloud.api.signOut(cloud.auth);
 }
-async function publishParentShare(){
-  if(!cloud.user){ showInfo('尚未登入','<p>請先用教師 Google 帳號登入，再更新家長分享。</p>'); return; }
+async function saveBookAndPublishShare(){
+  writeBookFromInputs();
+  editMode=false;
+  renderBook();
+  save();
+  if(!cloud.user || !cloud.api || !cloud.db){
+    refs.autosaveHint.textContent='已儲存；登入教師 Google 帳號後才能更新家長分享。';
+    updateCloudUi('已儲存；登入後可更新家長分享。');
+    return;
+  }
+  const originalText=refs.saveBookBtn.textContent;
+  refs.saveBookBtn.disabled=true;
+  refs.saveBookBtn.textContent='更新中...';
+  try{
+    const published=await publishParentShare({showDialog:false,copyLink:false});
+    refs.autosaveHint.textContent=published ? '已儲存並更新家長分享：'+nowTime() : '已儲存；家長分享更新失敗，請稍後再試。';
+  }finally{
+    refs.saveBookBtn.disabled=false;
+    refs.saveBookBtn.textContent=originalText;
+  }
+}
+async function publishParentShare(options={}){
+  const showDialog=options.showDialog!==false;
+  const copyLink=options.copyLink!==false;
+  if(!cloud.user){
+    if(showDialog) showInfo('尚未登入','<p>請先用教師 Google 帳號登入，再更新家長分享。</p>');
+    else updateCloudUi('已儲存；登入後可更新家長分享。');
+    return false;
+  }
   try{
     await cloud.api.setDoc(publicShareDocRef(),serializePublicShare());
-    await copyParentShareLink(false);
+    if(copyLink) await copyParentShareLink(false);
     const shareNote=refs.shareAttendanceToggle?.checked ? '家長可看到聯絡簿與座號簽到狀態，但看不到學生姓名，也不能修改簽到。' : '家長只會看到聯絡簿，不會看到學生出席區。';
-    showInfo('家長分享已更新',`<p>家長連結已複製，可傳給家長：</p><p><b>${escapeHtml(parentShareLink())}</b></p><p>${shareNote}</p>`);
+    if(showDialog) showInfo('家長分享已更新',`<p>家長連結已複製，可傳給家長：</p><p><b>${escapeHtml(parentShareLink())}</b></p><p>${shareNote}</p>`);
+    else updateCloudUi('已更新家長分享：'+nowTime());
+    return true;
   }catch(err){
     console.error(err);
     const message=err?.code==='permission-denied'
       ? '無法更新家長分享：目前線上的 Firestore 規則尚未允許新版分享欄位，請發布更新後的 firestore.rules。'
       : '無法更新家長分享，請稍後再試。';
-    showInfo('分享失敗',`<p>${escapeHtml(message)}</p>`);
+    if(showDialog) showInfo('分享失敗',`<p>${escapeHtml(message)}</p>`);
+    else updateCloudUi(message);
+    return false;
   }
 }
 function parentShareLink(){
@@ -1185,7 +1214,7 @@ function showHelp(){
       <section><h3>Q：如何設定學生名單？</h3><p>A：按「名單設定」，可貼上校務系統或教師手冊名冊，也可每行輸入「座號,姓名」。空號會自動略過。</p></section>
       <section><h3>Q：如何登記學生到校？</h3><p>A：點學生座號即可依目前時間記為準時或遲到；再次點同一位學生可改為準時、遲到、請假或未到。</p></section>
       <section><h3>Q：全班都到齊時怎麼操作？</h3><p>A：按「全班準時出席」，確認後會把今天名單內所有學生標記為準時。</p></section>
-      <section><h3>Q：如何分享給家長？</h3><p>A：登入教師 Google 帳號後按「更新家長分享」，再把連結傳給家長。需要顯示座號出席狀態時，先勾選「分享學生出席」。</p></section>
+      <section><h3>Q：如何分享給家長？</h3><p>A：登入教師 Google 帳號後，編輯聯絡簿時按「儲存並更新分享」即可同步給家長。第一次分享或需要重複複製連結時，也可在系統設定按「更新家長分享」。需要顯示座號出席狀態時，先勾選「分享學生出席」。</p></section>
       <section><h3>Q：一般分頁會避免螢幕休眠嗎？</h3><p>A：教師主畫面開著且分頁可見時，系統會自動嘗試保持螢幕喚醒；若瀏覽器不支援或 Windows 電源政策阻擋，仍需調整「螢幕與睡眠」和「螢幕保護程式」。</p></section>
       <section><h3>Q：班級名稱在哪裡設定？</h3><p>A：在「系統設定」填入班級名稱，畫面與家長分享標題會顯示為該班級的聯絡簿。</p></section>
     </div>
