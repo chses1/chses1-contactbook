@@ -464,9 +464,13 @@
 .morning-visible .main-grid.panels-swapped .morning-panel{grid-column:3!important}
 .morning-visible .main-grid.panels-swapped .morning-resize{grid-column:4!important}
 .morning-visible .main-grid.panels-swapped .contact-panel{grid-column:5!important}
-.attendance-hidden.morning-visible .main-grid{grid-template-columns:minmax(300px,var(--contact-track,.5fr)) 10px minmax(260px,var(--morning-track,.5fr))!important}
+.attendance-hidden.morning-visible .main-grid{grid-template-columns:minmax(300px,1fr) 10px minmax(300px,1fr)!important}
+.attendance-hidden.morning-visible .contact-panel{grid-column:1!important;grid-row:1!important}
 .attendance-hidden.morning-visible .morning-resize{grid-column:2!important}
 .attendance-hidden.morning-visible .morning-panel{grid-column:3!important}
+.attendance-hidden.morning-visible .main-grid.panels-swapped .contact-panel{grid-column:1!important;grid-row:1!important}
+.attendance-hidden.morning-visible .main-grid.panels-swapped .morning-resize{grid-column:2!important;grid-row:1!important}
+.attendance-hidden.morning-visible .main-grid.panels-swapped .morning-panel{grid-column:3!important;grid-row:1!important}
 .morning-card{border-color:#f8c84b;background:linear-gradient(110deg,#fffbea,#fff)}.morning-card h2{color:#ca8a04}.morning-card .circle-icon,.morning{background:#eab308}
 .morning-editor{grid-template-columns:1fr}.morning-editor textarea{min-height:132px;height:calc(8em + 28px)}
 .parent-share-mode .hero-clock{display:grid!important;grid-template-columns:1fr!important;height:auto!important;min-height:94px;padding:14px 20px;border-radius:0 0 22px 22px}

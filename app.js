@@ -499,7 +499,13 @@ function wireEvents(){
   refs.recordsBtn.onclick=showRecords;
   refs.settingsBtn.onclick=()=>refs.settingsDialog.showModal();
   refs.classNameInput.oninput=()=>{ state.settings.className=refs.classNameInput.value.trim(); refs.lunarText.textContent=getClassName(); save(); };
-  if(refs.showAttendanceToggle) refs.showAttendanceToggle.onchange=()=>{ state.settings.showAttendance=refs.showAttendanceToggle.checked; applyLayout(); renderAll(); save(); };
+  if(refs.showAttendanceToggle) refs.showAttendanceToggle.onchange=()=>{
+    state.settings.showAttendance=refs.showAttendanceToggle.checked;
+    if(!state.settings.showAttendance && state.settings.showMorning===true) getLayout().morningRatio=.5;
+    applyLayout();
+    renderAll();
+    save();
+  };
   if(refs.showMorningToggle) refs.showMorningToggle.onchange=()=>{ state.settings.showMorning=refs.showMorningToggle.checked; applyLayout(); renderAll(); save(); };
   if(refs.morningEditBtn) refs.morningEditBtn.onclick=()=>{ morningEditMode=!morningEditMode; renderMorning(); };
   if(refs.morningMarkPhoneticBtn) refs.morningMarkPhoneticBtn.onclick=openPhoneticEditor;
