@@ -530,3 +530,526 @@
   .legend{margin:7px 0 6px}
   .bottom-actions{padding-top:8px}
 }
+
+/* mobile portrait layout */
+@media(max-width:700px) and (orientation:portrait){
+  html,body{
+    width:100%;
+    min-height:100%;
+    height:auto;
+    overflow-x:hidden;
+    overflow-y:auto;
+    background:#071f62;
+    -webkit-text-size-adjust:100%;
+  }
+  body{
+    padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 18px);
+  }
+  .app-shell{
+    width:100%;
+    min-height:100dvh;
+    height:auto;
+    padding:8px;
+    gap:8px;
+    overflow:visible;
+  }
+  .hero-clock{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    height:auto!important;
+    min-height:0!important;
+    max-height:none;
+    gap:10px;
+    padding:12px;
+    border-radius:0 0 18px 18px;
+    overflow:visible;
+  }
+  .clock-block{
+    grid-column:1;
+    min-height:0;
+    justify-content:center;
+    overflow:hidden;
+  }
+  .clock-card{
+    width:100%;
+    overflow:hidden;
+  }
+  .digital-clock{
+    justify-content:center;
+    gap:3px!important;
+    font-size:clamp(48px,17vw,72px)!important;
+    line-height:1;
+    transform:none;
+  }
+  .time-cell,.time-cell.seconds{
+    min-width:1.02em;
+    line-height:1;
+  }
+  .time-cell.seconds{
+    font-size:.68em;
+  }
+  .clock-separator{
+    transform:translateY(-.04em);
+  }
+  .date-block{
+    grid-column:1;
+    padding:0;
+    display:grid;
+    justify-items:center;
+    gap:4px;
+    text-align:center;
+  }
+  .date-full{
+    font-size:22px;
+    line-height:1.25;
+  }
+  .week-text{
+    margin:0;
+    font-size:36px;
+    line-height:1.12;
+    letter-spacing:0;
+  }
+  .school-temp{
+    font-size:15px;
+    margin-top:2px;
+  }
+  .lunar-pill{
+    max-width:100%;
+    margin:2px 0 0;
+    padding:5px 13px;
+    font-size:15px;
+    line-height:1.2;
+    white-space:normal;
+  }
+  .arrival-card{
+    display:grid;
+    grid-template-columns:1fr auto auto;
+    align-items:center;
+    gap:8px;
+    padding:8px 10px;
+    min-height:54px;
+  }
+  .arrival-title{
+    min-width:0;
+    font-size:14px;
+    line-height:1.2;
+    text-align:left;
+  }
+  .late-time-shell{
+    width:116px;
+    margin:0;
+    gap:4px;
+  }
+  .late-time-part{
+    height:38px;
+    border-radius:10px;
+    font-size:27px;
+  }
+  .late-time-colon{
+    font-size:24px;
+  }
+  .arrival-status{
+    font-size:14px;
+    line-height:1.15;
+    text-align:right;
+    white-space:nowrap;
+  }
+  .top-buttons{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:7px;
+  }
+  .icon-btn{
+    height:60px;
+    min-width:0;
+    border-radius:12px;
+    font-size:22px;
+    line-height:1;
+    padding:5px 2px;
+  }
+  .icon-btn span{
+    max-width:100%;
+    font-size:12px;
+    line-height:1.05;
+    overflow-wrap:anywhere;
+  }
+  .top-resize,.main-resize{
+    display:none!important;
+  }
+  .main-grid,.main-grid.panels-swapped{
+    display:grid;
+    grid-template-columns:1fr!important;
+    grid-auto-rows:auto;
+    gap:8px;
+    overflow:visible;
+  }
+  .main-grid.panels-swapped .contact-panel,
+  .main-grid.panels-swapped .attendance-panel{
+    grid-column:auto;
+    grid-row:auto;
+  }
+  .panel{
+    min-height:0!important;
+    height:auto;
+    overflow:visible;
+    border-radius:16px;
+    padding:14px;
+  }
+  .panel-head{
+    display:grid;
+    grid-template-columns:1fr;
+    align-items:stretch;
+    gap:10px;
+  }
+  .panel h1{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:26px;
+    line-height:1.15;
+    white-space:normal;
+  }
+  .title-icon{
+    flex:0 0 auto;
+    width:32px;
+    height:32px;
+    margin-right:0;
+    border-radius:10px;
+    font-size:18px;
+  }
+  .contact-panel .head-actions{
+    display:grid;
+    grid-template-columns:1fr repeat(2,minmax(70px,.55fr));
+    width:100%;
+    gap:8px;
+  }
+  .contact-panel .head-actions input[type=date],
+  .contact-panel .head-actions button{
+    width:100%;
+    height:44px;
+    min-width:0;
+    padding:0 8px;
+    font-size:16px;
+  }
+  .contact-panel .head-actions input[type=date]{
+    font-size:15px;
+  }
+  .contact-panel .font-toolbar{
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:8px;
+    padding:9px;
+    overflow:visible;
+  }
+  .contact-panel .font-toolbar span,
+  .contact-panel .font-select-label{
+    grid-column:span 2;
+    width:100%;
+    margin:0;
+    justify-content:center;
+  }
+  .contact-panel .font-toolbar #writingModeBtn,
+  .contact-panel .font-toolbar #viewModeBtn,
+  .contact-panel .font-btn,
+  .contact-panel .small-btn{
+    width:100%;
+    min-width:0;
+    height:38px;
+    padding:0 4px;
+    font-size:15px;
+  }
+  .contact-panel #fontScaleLabel,
+  .contact-panel #lineHeightLabel{
+    width:auto;
+    align-self:center;
+    text-align:center;
+    font-size:14px;
+  }
+  .contact-panel .font-select{
+    width:100%;
+    min-width:0;
+    height:38px;
+    font-size:14px;
+    padding:0 8px;
+  }
+  .align-toolbar{
+    grid-column:1/-1;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+  }
+  .align-btn{
+    width:100%;
+    padding:0;
+    font-size:14px;
+  }
+  .book-display{
+    display:block;
+    margin-top:12px;
+    overflow:visible;
+  }
+  .book-card{
+    display:grid;
+    grid-template-columns:34px minmax(0,1fr);
+    gap:10px;
+    min-height:0;
+    margin:0 0 10px;
+    padding:13px 12px;
+    overflow:visible;
+  }
+  .circle-icon{
+    width:32px;
+    height:32px;
+    font-size:16px;
+  }
+  .book-card h2{
+    margin:0 0 6px;
+    font-size:22px!important;
+    line-height:1.2;
+  }
+  .book-text{
+    overflow:visible;
+    font-size:23px!important;
+    line-height:1.55;
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
+  .book-line{
+    gap:.35em;
+  }
+  .line-no{
+    min-width:1.4em;
+    text-align:right;
+  }
+  .vertical-mode{
+    display:block;
+    writing-mode:horizontal-tb;
+  }
+  .vertical-mode .book-card,
+  .vertical-mode .book-card>div:not(.circle-icon),
+  .vertical-mode .book-text,
+  .vertical-mode .book-line{
+    display:block;
+    height:auto;
+    min-width:0;
+    writing-mode:horizontal-tb;
+  }
+  .vertical-mode .book-card h2,
+  .vertical-mode .book-line>span:last-child{
+    writing-mode:horizontal-tb;
+    text-orientation:mixed;
+  }
+  .editor{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:10px;
+    margin-top:12px;
+    overflow:visible!important;
+    padding:0!important;
+  }
+  .book-field-toggles{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+    padding:8px;
+  }
+  .book-field-toggles label{
+    min-width:0;
+    min-height:38px;
+    justify-content:flex-start;
+    padding:6px 8px;
+    font-size:14px;
+    white-space:normal;
+  }
+  .contact-panel.editing .editor-field{
+    gap:6px;
+  }
+  .contact-panel.editing .editor-field label{
+    font-size:16px;
+    line-height:1.2;
+  }
+  .contact-panel.editing .editor textarea,
+  .editor textarea{
+    width:100%;
+    min-height:96px;
+    height:112px;
+    max-height:none;
+    margin:0;
+    padding:11px;
+    border-radius:10px;
+    font-size:20px!important;
+    line-height:1.55;
+    overflow:auto;
+    resize:vertical;
+    word-break:break-word;
+    -webkit-user-select:text;
+    user-select:text;
+  }
+  .contact-panel.editing .editor [data-book-field-panel="homework"] textarea{
+    min-height:180px;
+    height:210px;
+  }
+  .contact-panel.editing .editor-actions{
+    position:static;
+    display:grid;
+    grid-template-columns:1fr;
+    height:auto;
+    min-height:0;
+    gap:8px;
+    padding:4px 0 0;
+    background:transparent;
+  }
+  .contact-panel.editing .editor-actions button{
+    width:100%;
+    height:48px;
+    min-height:48px;
+    border-radius:10px;
+    font-size:16px;
+  }
+  .phonetic-guide{
+    padding:9px 10px;
+    font-size:13px;
+    line-height:1.45;
+  }
+  .attendance-panel{
+    min-height:0!important;
+  }
+  .attendance-panel .panel-head{
+    grid-template-columns:1fr;
+  }
+  #namesBtn{
+    width:100%;
+    height:44px;
+    font-size:16px;
+  }
+  .summary-row{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:6px;
+    margin:10px 0;
+  }
+  .summary-card{
+    height:58px;
+    border-radius:10px;
+  }
+  .summary-card strong{
+    font-size:24px;
+    line-height:1;
+  }
+  .summary-card span{
+    font-size:13px;
+    line-height:1.1;
+  }
+  .student-grid{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    grid-template-rows:none;
+    gap:7px;
+    overflow:visible;
+    padding:0;
+  }
+  .student-btn{
+    aspect-ratio:1/1;
+    min-height:0;
+    border-radius:10px;
+    padding:4px;
+  }
+  .student-btn .seat{
+    font-size:clamp(20px,8vw,30px);
+  }
+  .student-btn .name{
+    font-size:11px;
+  }
+  .legend{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:6px 10px;
+    margin:10px 0;
+    font-size:12px;
+    line-height:1.3;
+  }
+  .bottom-actions{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+    padding-top:10px;
+  }
+  .bottom-actions button{
+    width:100%;
+    min-height:44px;
+    font-size:15px;
+  }
+  .footer-bar{
+    min-height:0;
+    height:auto;
+    padding:8px 10px;
+    gap:6px;
+    flex-direction:column;
+    align-items:flex-start;
+    font-size:12px;
+  }
+  .modal{
+    width:calc(100vw - 24px);
+    max-width:calc(100vw - 24px);
+  }
+  .modal-body{
+    padding:16px;
+    font-size:16px;
+  }
+  .modal-actions{
+    display:grid;
+    grid-template-columns:1fr;
+    padding:14px 16px;
+  }
+  .names-input{
+    height:55dvh;
+    font-size:17px;
+  }
+}
+
+@media(max-width:700px) and (orientation:portrait){
+  .parent-share-mode .hero-clock{
+    padding:14px 12px;
+    gap:5px;
+    border-radius:0 0 16px 16px;
+    background:#0b2b7e;
+  }
+  .parent-share-mode .clock-block,
+  .parent-share-mode .school-temp,
+  .parent-share-mode .arrival-card,
+  .parent-share-mode .top-buttons{
+    display:none!important;
+  }
+  .parent-share-mode .date-block{
+    display:grid;
+    gap:5px;
+  }
+  .parent-share-mode .date-full{
+    font-size:22px;
+    color:#d9ebff;
+  }
+  .parent-share-mode .week-text{
+    font-size:34px;
+    line-height:1.05;
+  }
+  .parent-share-mode .lunar-pill{
+    margin:2px 0 0;
+    padding:0;
+    border:0;
+    background:transparent;
+    box-shadow:none;
+    color:#fff;
+    font-size:22px;
+    font-weight:950;
+    white-space:normal;
+  }
+  .parent-share-mode .main-grid{
+    gap:8px;
+  }
+  .parent-share-mode .panel{
+    border-radius:14px;
+  }
+  .parent-share-mode .contact-panel .panel-head{
+    display:none;
+  }
+  .parent-share-mode .book-display{
+    margin-top:0;
+  }
+}
