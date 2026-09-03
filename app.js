@@ -82,6 +82,7 @@ const cloud = {
 };
 
 function dateKey(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+function todayKey(){ return dateKey(new Date()); }
 function displayDate(key){ const d = new Date(key+'T00:00:00'); const w='日一二三四五六'[d.getDay()]; return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}（${w}）`; }
 function nowTime(){ return new Date().toLocaleTimeString('zh-TW',{hour12:false}); }
 function isFirebaseConfigured(){ return ['apiKey','authDomain','projectId','appId'].every(k=>String(firebaseConfig[k]||'').trim()); }
@@ -395,10 +396,17 @@ function initSchoolTemperature(){
 }
 function tick(){
   const n=new Date();
+  const currentDateKey=dateKey(n);
   const hh=String(n.getHours()).padStart(2,'0'), mm=String(n.getMinutes()).padStart(2,'0'), ss=String(n.getSeconds()).padStart(2,'0');
   refs.clock.setAttribute('aria-label',`${hh}:${mm}:${ss}`);
   refs.clockHours.textContent=hh; refs.clockMinutes.textContent=mm; refs.clockSeconds.textContent=ss;
   refs.dateFull.textContent=`${n.getFullYear()}年${String(n.getMonth()+1).padStart(2,'0')}月${String(n.getDate()).padStart(2,'0')}日`; refs.weekText.textContent=`星期${'日一二三四五六'[n.getDay()]}`;
+  if(cloud.parentShareId && cloud.parentShareLoaded && selectedDate!==currentDateKey){
+    selectedDate=currentDateKey;
+    ensureDay(selectedDate);
+    refs.datePicker.value=selectedDate;
+    renderAll();
+  }
   if(!cloud.parentShareId || cloud.parentShareLoaded) refs.lunarText.textContent=getClassName();
   const hm=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; refs.timeStatus.textContent= hm<=state.settings.lateTime ? '準時時段 ✅' : '遲到時段 ⚠️';
 }
@@ -906,16 +914,20 @@ function serializeTeacherState(){
 }
 function serializePublicShare(){
   const shareAttendance=!!refs.shareAttendanceToggle?.checked;
+  const today=todayKey();
+  ensureDay(today);
+  const publicDates=Array.from(new Set(Object.keys(state.books || {}).filter(key=>key>=today).concat(today))).sort();
+  const pickDates=(source={},fallbackFactory=()=>({}))=>Object.fromEntries(publicDates.map(key=>[key,source[key] || fallbackFactory(key)]));
   return {
     ownerUid:cloud.user.uid,
     classId:getClassId(),
     className:getClassName(),
-    sharedDate:selectedDate,
+    sharedDate:today,
     shareAttendance,
-    books:{[selectedDate]:state.books[selectedDate] || {homework:'',reminder:'',test:'',note:'',teacher:''}},
-    bookFields:{[selectedDate]:getEnabledBookFields()},
-    bookPhonetics:{[selectedDate]:state.bookPhonetics?.[selectedDate] || {}},
-    attendance:shareAttendance ? {[selectedDate]:state.attendance[selectedDate] || {}} : {},
+    books:pickDates(state.books,()=>({homework:'',reminder:'',test:'',note:'',teacher:''})),
+    bookFields:pickDates(state.bookFields,()=>defaultBookFields()),
+    bookPhonetics:pickDates(state.bookPhonetics,()=>({})),
+    attendance:shareAttendance ? {[today]:state.attendance[today] || {}} : {},
     students:shareAttendance ? state.students.map(st=>({seat:st.seat,name:`${st.seat}號`})) : [],
     settings:{
       writingMode:state.settings.writingMode,
@@ -929,6 +941,7 @@ function serializePublicShare(){
     updatedAt:cloud.api.serverTimestamp()
   };
 }
+function parentShareDisplayDate(){ return todayKey(); }
 function applyStateFromCloud(nextState){
   isApplyingRemoteState=true;
   state=normalizeState(nextState);
@@ -999,7 +1012,7 @@ async function saveBookAndPublishShare(){
   refs.saveBookBtn.textContent='更新中...';
   try{
     const published=await publishParentShare({showDialog:false,copyLink:false});
-    refs.autosaveHint.textContent=published ? '已儲存並更新家長分享：'+nowTime() : '已儲存；家長分享更新失敗，請稍後再試。';
+    refs.autosaveHint.textContent=published ? '已儲存並更新家長分享：'+nowTime()+'；預排內容會到當天才顯示。' : '已儲存；家長分享更新失敗，請稍後再試。';
   }finally{
     refs.saveBookBtn.disabled=false;
     refs.saveBookBtn.textContent=originalText;
@@ -1016,7 +1029,7 @@ async function publishParentShare(options={}){
   try{
     await cloud.api.setDoc(publicShareDocRef(),serializePublicShare());
     if(copyLink) await copyParentShareLink(false);
-    const shareNote=refs.shareAttendanceToggle?.checked ? '家長可看到聯絡簿與座號簽到狀態，但看不到學生姓名，也不能修改簽到。' : '家長只會看到聯絡簿，不會看到學生出席區。';
+    const shareNote=refs.shareAttendanceToggle?.checked ? '家長頁會依實際日期顯示當天聯絡簿；預排內容會到當天才出現。家長可看到座號簽到狀態，但看不到學生姓名，也不能修改簽到。' : '家長頁會依實際日期顯示當天聯絡簿；預排內容會到當天才出現，不會看到學生出席區。';
     if(showDialog) showInfo('家長分享已更新',`<p>家長連結已複製，可傳給家長：</p><p><b>${escapeHtml(parentShareLink())}</b></p><p>${shareNote}</p>`);
     else updateCloudUi('已更新家長分享：'+nowTime());
     return true;
@@ -1046,7 +1059,7 @@ async function loadParentShare(){
     const snap=await cloud.api.getDoc(publicShareDocRef(cloud.parentShareId));
     if(!snap.exists()){ updateCloudUi('找不到這個分享連結，請向老師確認連結是否正確。'); return; }
     const data=snap.data();
-    selectedDate=data.sharedDate || Object.keys(data.books||{}).sort().pop() || selectedDate;
+    selectedDate=parentShareDisplayDate(data);
     cloud.parentShareLoaded=true;
     refs.datePicker.value=selectedDate;
     document.body.classList.toggle('share-attendance-enabled',!!data.shareAttendance);
@@ -1214,7 +1227,7 @@ function showHelp(){
       <section><h3>Q：如何設定學生名單？</h3><p>A：按「名單設定」，可貼上校務系統或教師手冊名冊，也可每行輸入「座號,姓名」。空號會自動略過。</p></section>
       <section><h3>Q：如何登記學生到校？</h3><p>A：點學生座號即可依目前時間記為準時或遲到；再次點同一位學生可改為準時、遲到、請假或未到。</p></section>
       <section><h3>Q：全班都到齊時怎麼操作？</h3><p>A：按「全班準時出席」，確認後會把今天名單內所有學生標記為準時。</p></section>
-      <section><h3>Q：如何分享給家長？</h3><p>A：登入教師 Google 帳號後，編輯聯絡簿時按「儲存並更新分享」即可同步給家長。第一次分享或需要重複複製連結時，也可在系統設定按「更新家長分享」。需要顯示座號出席狀態時，先勾選「分享學生出席」。</p></section>
+      <section><h3>Q：如何分享給家長？</h3><p>A：登入教師 Google 帳號後，編輯聯絡簿時按「儲存並更新分享」即可同步給家長。家長頁會依實際日期顯示當天聯絡簿；例如今天先編明天，內容會預先儲存，但要到明天才會顯示在家長連結。第一次分享或需要重複複製連結時，也可在系統設定按「更新家長分享」。需要顯示座號出席狀態時，先勾選「分享學生出席」。</p></section>
       <section><h3>Q：一般分頁會避免螢幕休眠嗎？</h3><p>A：教師主畫面開著且分頁可見時，系統會自動嘗試保持螢幕喚醒；若瀏覽器不支援或 Windows 電源政策阻擋，仍需調整「螢幕與睡眠」和「螢幕保護程式」。</p></section>
       <section><h3>Q：班級名稱在哪裡設定？</h3><p>A：在「系統設定」填入班級名稱，畫面與家長分享標題會顯示為該班級的聯絡簿。</p></section>
     </div>
