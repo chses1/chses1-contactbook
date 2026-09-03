@@ -444,9 +444,31 @@
 .hero-clock{grid-template-columns:minmax(390px,1.35fr) minmax(145px,.45fr) minmax(190px,.62fr) minmax(220px,.7fr);gap:12px;padding-left:24px;padding-right:24px}
 .hero-clock:before{inset:0}
 .contact-panel .panel-head{flex-wrap:wrap}
+.date-display-control{height:46px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:10px;padding:0 14px;background:#fff;color:#13284c;font-size:17px;font-weight:900;white-space:nowrap}
+.morning-panel .panel-head{align-items:center;gap:8px;flex-wrap:wrap}.morning-panel h1{font-size:32px;white-space:nowrap}.morning-panel .head-actions{display:grid;grid-template-columns:158px 82px;gap:8px;align-items:center}.morning-panel .head-actions #morningEditBtn{width:82px;height:46px;padding:0;font-size:17px;white-space:nowrap;line-height:1}
 .attendance-hidden .attendance-panel,.attendance-hidden #mainResizeHandle,.attendance-hidden #swapPanelsBtn{display:none!important}
 .attendance-hidden .main-grid{grid-template-columns:1fr!important}
 .attendance-hidden .contact-panel{grid-column:1!important}
+.morning-panel{display:none}
+.morning-resize{display:none}
+.morning-visible .morning-panel{display:flex}
+.morning-visible .morning-resize{display:block}
+.morning-visible .main-grid{grid-template-columns:minmax(260px,var(--contact-track,.33fr)) 10px minmax(240px,var(--morning-track,.33fr)) 10px minmax(260px,var(--attendance-track,.34fr))}
+.morning-visible .contact-panel{grid-column:1!important;grid-row:1}
+.morning-visible .morning-resize{grid-column:2!important;grid-row:1}
+.morning-visible .morning-panel{grid-column:3!important;grid-row:1}
+.morning-visible #mainResizeHandle{grid-column:4!important;grid-row:1}
+.morning-visible .attendance-panel{grid-column:5!important;grid-row:1}
+.morning-visible .main-grid.panels-swapped .attendance-panel{grid-column:1!important}
+.morning-visible .main-grid.panels-swapped #mainResizeHandle{grid-column:2!important}
+.morning-visible .main-grid.panels-swapped .morning-panel{grid-column:3!important}
+.morning-visible .main-grid.panels-swapped .morning-resize{grid-column:4!important}
+.morning-visible .main-grid.panels-swapped .contact-panel{grid-column:5!important}
+.attendance-hidden.morning-visible .main-grid{grid-template-columns:minmax(300px,var(--contact-track,.5fr)) 10px minmax(260px,var(--morning-track,.5fr))!important}
+.attendance-hidden.morning-visible .morning-resize{grid-column:2!important}
+.attendance-hidden.morning-visible .morning-panel{grid-column:3!important}
+.morning-card{border-color:#f8c84b;background:linear-gradient(110deg,#fffbea,#fff)}.morning-card h2{color:#ca8a04}.morning-card .circle-icon,.morning{background:#eab308}
+.morning-editor{grid-template-columns:1fr}.morning-editor textarea{min-height:132px;height:calc(8em + 28px)}
 .parent-share-mode .hero-clock{display:grid!important;grid-template-columns:1fr!important;height:auto!important;min-height:94px;padding:14px 20px;border-radius:0 0 22px 22px}
 .parent-share-mode .clock-block{display:none!important}
 .parent-share-mode .date-block{grid-column:1;text-align:center}
@@ -521,6 +543,8 @@
   .main-grid,.main-grid.panels-swapped{display:grid;grid-template-columns:1fr!important;grid-auto-rows:minmax(440px,auto);overflow:visible}
   .main-resize{display:none}
   .main-grid.panels-swapped .contact-panel,.main-grid.panels-swapped .attendance-panel{grid-column:auto;grid-row:auto}
+  .morning-visible .morning-panel{grid-column:auto!important;grid-row:auto!important}
+  .morning-visible .morning-resize{display:none!important}
   .panel{overflow:visible}
   .contact-panel,.attendance-panel{min-height:440px}
   .attendance-head .subtle{display:none}
@@ -689,10 +713,12 @@
     overflow:visible;
   }
   .main-grid.panels-swapped .contact-panel,
-  .main-grid.panels-swapped .attendance-panel{
-    grid-column:auto;
-    grid-row:auto;
+  .main-grid.panels-swapped .attendance-panel,
+  .morning-visible .morning-panel{
+    grid-column:auto!important;
+    grid-row:auto!important;
   }
+  .morning-visible .morning-resize{display:none!important}
   .panel{
     min-height:0!important;
     height:auto;

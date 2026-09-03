@@ -44,21 +44,23 @@ const defaultStudents = Array.from({length:30},(_,i)=>({seat:String(i+1).padStar
 const $ = id => document.getElementById(id);
 const refs = {
   cloudModeLabel:$('cloudModeLabel'),cloudHint:$('cloudHint'),signInBtn:$('signInBtn'),shareAttendanceToggle:$('shareAttendanceToggle'),publishShareBtn:$('publishShareBtn'),copyShareBtn:$('copyShareBtn'),helpBtn:$('helpBtn'),signOutBtn:$('signOutBtn'),storageStatus:$('storageStatus'),
-  shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
+  shell:document.querySelector('.app-shell'),hero:document.querySelector('.hero-clock'),mainGrid:document.querySelector('.main-grid'),topResizeHandle:$('topResizeHandle'),morningResizeHandle:$('morningResizeHandle'),mainResizeHandle:$('mainResizeHandle'),
   clock:$('clock'),clockHours:$('clockHours'),clockMinutes:$('clockMinutes'),clockSeconds:$('clockSeconds'),dateFull:$('dateFull'),weekText:$('weekText'),schoolTempLink:$('schoolTempLink'),lunarText:$('lunarText'),lateTime:$('lateTime'),lateHour:$('lateHour'),lateMinute:$('lateMinute'),timeStatus:$('timeStatus'),lateLegendOnTime:$('lateLegendOnTime'),lateLegendLate:$('lateLegendLate'),calendarBtn:$('calendarBtn'),swapPanelsBtn:$('swapPanelsBtn'),settingsBtn:$('settingsBtn'),fullscreenBtn:$('fullscreenBtn'),formatBtn:$('formatBtn'),formatPanel:$('formatPanel'),fontDownBtn:$('fontDownBtn'),fontUpBtn:$('fontUpBtn'),lineHeightDownBtn:$('lineHeightDownBtn'),lineHeightUpBtn:$('lineHeightUpBtn'),lineHeightLabel:$('lineHeightLabel'),phoneticModeSelect:$('phoneticModeSelect'),alignLeftBtn:$('alignLeftBtn'),alignCenterBtn:$('alignCenterBtn'),alignRightBtn:$('alignRightBtn'),fontScaleLabel:$('fontScaleLabel'),fontFamilySelect:$('fontFamilySelect'),
   datePicker:$('datePicker'),selectedDateLabel:$('selectedDateLabel'),editBtn:$('editBtn'),writingModeBtn:$('writingModeBtn'),viewModeBtn:$('viewModeBtn'),bookDisplay:$('bookDisplay'),editor:$('editor'),
   homeworkCard:$('homeworkCard'),reminderCard:$('reminderCard'),testCard:$('testCard'),noteCard:$('noteCard'),teacherCard:$('teacherCard'),emptyBookMessage:$('emptyBookMessage'),
   homeworkView:$('homeworkView'),reminderView:$('reminderView'),testView:$('testView'),noteView:$('noteView'),teacherView:$('teacherView'),
   bookFieldToggles:$('bookFieldToggles'),homeworkToggle:$('homeworkToggle'),reminderToggle:$('reminderToggle'),testToggle:$('testToggle'),noteToggle:$('noteToggle'),teacherToggle:$('teacherToggle'),
   homeworkInput:$('homeworkInput'),reminderInput:$('reminderInput'),testInput:$('testInput'),noteInput:$('noteInput'),teacherInput:$('teacherInput'),saveBookBtn:$('saveBookBtn'),copyYesterdayBtn:$('copyYesterdayBtn'),markPhoneticBtn:$('markPhoneticBtn'),autosaveHint:$('autosaveHint'),
+  morningPanel:document.querySelector('.morning-panel'),morningDateLabel:$('morningDateLabel'),morningEditBtn:$('morningEditBtn'),morningDisplay:$('morningDisplay'),morningCard:$('morningCard'),morningView:$('morningView'),emptyMorningMessage:$('emptyMorningMessage'),morningEditor:$('morningEditor'),morningInput:$('morningInput'),morningMarkPhoneticBtn:$('morningMarkPhoneticBtn'),saveMorningBtn:$('saveMorningBtn'),morningAutosaveHint:$('morningAutosaveHint'),
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
   statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),allOnTimeBtn:$('allOnTimeBtn'),resetBtn:$('resetBtn'),lastSaved:$('lastSaved'),
   studentDialog:$('studentDialog'),studentTitle:$('studentTitle'),studentDetail:$('studentDetail'),markOnTimeBtn:$('markOnTimeBtn'),markLateBtn:$('markLateBtn'),markLeaveBtn:$('markLeaveBtn'),markAbsentBtn:$('markAbsentBtn'),
-  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),phoneticDialog:$('phoneticDialog'),phoneticChar:$('phoneticChar'),phoneticChoices:$('phoneticChoices'),phoneticInput:$('phoneticInput'),savePhoneticBtn:$('savePhoneticBtn'),clearPhoneticBtn:$('clearPhoneticBtn'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput'),showAttendanceToggle:$('showAttendanceToggle'),wakeLockStatus:$('wakeLockStatus'),clearAllAttendanceBtn:$('clearAllAttendanceBtn')
+  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),phoneticDialog:$('phoneticDialog'),phoneticChar:$('phoneticChar'),phoneticChoices:$('phoneticChoices'),phoneticInput:$('phoneticInput'),savePhoneticBtn:$('savePhoneticBtn'),clearPhoneticBtn:$('clearPhoneticBtn'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput'),showAttendanceToggle:$('showAttendanceToggle'),showMorningToggle:$('showMorningToggle'),wakeLockStatus:$('wakeLockStatus'),clearAllAttendanceBtn:$('clearAllAttendanceBtn')
 };
 let state = loadState();
 let selectedDate = dateKey(new Date());
 let editMode = false;
+let morningEditMode = false;
 let selectedSeat = null;
 let selectedPhoneticTarget = null;
 let selectedPhoneticVariant = 0;
@@ -107,6 +109,7 @@ function normalizeState(s={}){
     books:s.books || {},
     bookFields:s.bookFields || {},
     bookPhonetics:s.bookPhonetics || {},
+    morningNotes:s.morningNotes || {},
     attendance:s.attendance || {},
     settings:{
       lateTime:s.settings?.lateTime || '07:50',
@@ -118,6 +121,7 @@ function normalizeState(s={}){
       textAlign:s.settings?.textAlign || 'center',
       className:s.settings?.className || '',
       showAttendance:s.settings?.showAttendance !== false,
+      showMorning:s.settings?.showMorning === true,
       layout:s.settings?.layout || {}
     }
   };
@@ -137,6 +141,8 @@ function defaultBookFields(){ return Object.fromEntries(BOOK_FIELDS.map(([key])=
 function ensureDay(key){
   if(!state.attendance[key]) state.attendance[key]={};
   if(!state.books[key]) state.books[key]={homework:'',reminder:'',test:'',note:'',teacher:''};
+  if(!state.morningNotes) state.morningNotes={};
+  if(!state.morningNotes[key]) state.morningNotes[key]='';
   if(!state.bookFields) state.bookFields={};
   if(!state.bookFields[key]) state.bookFields[key]=defaultBookFields();
   if(!state.bookPhonetics) state.bookPhonetics={};
@@ -147,7 +153,7 @@ function getEnabledBookFields(key=selectedDate){
   return {...defaultBookFields(),...(state.bookFields[key]||{})};
 }
 function init(){
-  refs.datePicker.value=selectedDate; refs.lateTime.value=state.settings.lateTime; refs.fontFamilySelect.value=state.settings.fontFamily||'default'; refs.phoneticModeSelect.value=state.settings.phoneticMode||'none'; refs.classNameInput.value=state.settings.className||''; if(refs.showAttendanceToggle) refs.showAttendanceToggle.checked=state.settings.showAttendance!==false; ensureDay(selectedDate);
+  refs.datePicker.value=selectedDate; refs.lateTime.value=state.settings.lateTime; refs.fontFamilySelect.value=state.settings.fontFamily||'default'; refs.phoneticModeSelect.value=state.settings.phoneticMode||'none'; refs.classNameInput.value=state.settings.className||''; if(refs.showAttendanceToggle) refs.showAttendanceToggle.checked=state.settings.showAttendance!==false; if(refs.showMorningToggle) refs.showMorningToggle.checked=state.settings.showMorning===true; ensureDay(selectedDate);
   applyLayout();
   updateLateTimeDisplay();
   wireEvents(); installLayoutResizers(); installResponsiveSizing(); tick(); setInterval(tick,1000);
@@ -172,11 +178,18 @@ function applyAttendanceVisibility(){
   document.body.classList.toggle('attendance-hidden',hidden);
   if(refs.swapPanelsBtn) refs.swapPanelsBtn.disabled=hidden;
 }
+function applyMorningVisibility(){
+  const visible=!cloud.parentShareId && state.settings.showMorning===true;
+  document.body.classList.toggle('morning-visible',visible);
+  if(!visible) morningEditMode=false;
+}
 function applyLayout(){
   const layout=getLayout();
   applyAttendanceVisibility();
+  applyMorningVisibility();
   if(!layout.topHeight) layout.topHeight=172;
   if(!layout.leftRatio) layout.leftRatio=.5;
+  if(!layout.morningRatio) layout.morningRatio=.5;
   const maxTopHeight=clamp(Math.round(window.innerHeight*.28),112,300);
   layout.topHeight=clamp(layout.topHeight,112,maxTopHeight);
   refs.shell.style.setProperty('--top-height',layout.topHeight+'px');
@@ -194,6 +207,11 @@ function updateMainLayoutWidth(){
   const available=Math.max(0,width-handle-gap*2);
   const left=clamp(Math.round(available*(layout.leftRatio||.5)),Math.min(360,available*.7),Math.max(360,available-320));
   refs.shell.style.setProperty('--left-width',left+'px');
+  const groupRatio=clamp(layout.leftRatio||.66,.28,.82);
+  const contactRatio=clamp(layout.morningRatio||.5,.28,.72);
+  refs.shell.style.setProperty('--contact-track',(groupRatio*contactRatio).toFixed(3)+'fr');
+  refs.shell.style.setProperty('--morning-track',(groupRatio*(1-contactRatio)).toFixed(3)+'fr');
+  refs.shell.style.setProperty('--attendance-track',(1-groupRatio).toFixed(3)+'fr');
 }
 function updateResponsiveSizing(){
   if(!refs.shell) return;
@@ -257,6 +275,21 @@ function installLayoutResizers(){
   drag(refs.topResizeHandle,e=>{
     const rect=refs.shell.getBoundingClientRect();
     getLayout().topHeight=clamp(e.clientY-rect.top,132,Math.min(300,window.innerHeight*.34));
+  });
+  drag(refs.morningResizeHandle,e=>{
+    const rect=refs.mainGrid.getBoundingClientRect();
+    const handle=refs.morningResizeHandle.offsetWidth||10;
+    const layout=getLayout();
+    const mainCenter=refs.mainResizeHandle && refs.mainResizeHandle.offsetParent!==null
+      ? refs.mainResizeHandle.getBoundingClientRect().left+refs.mainResizeHandle.offsetWidth/2
+      : rect.right;
+    if(layout.swapped && refs.mainResizeHandle?.offsetParent!==null){
+      const available=Math.max(1,rect.right-mainCenter-handle);
+      layout.morningRatio=clamp((rect.right-e.clientX-handle/2)/available,.28,.72);
+      return;
+    }
+    const available=Math.max(1,mainCenter-rect.left-handle);
+    layout.morningRatio=clamp((e.clientX-rect.left-handle/2)/available,.28,.72);
   });
   drag(refs.mainResizeHandle,e=>{
     const rect=refs.mainGrid.getBoundingClientRect();
@@ -444,7 +477,7 @@ function wireEvents(){
       save();
     });
   });
-  bookInputEntries().forEach(([,textarea])=>{
+  contactBookInputEntries().forEach(([,textarea])=>{
     const remember=()=>capturePhoneticSelection(textarea);
     textarea.addEventListener('input',()=>{writeBookFromInputs(); remember(); save(); refs.autosaveHint.textContent='已自動儲存：'+nowTime();});
     ['focus','select','keyup','mouseup','pointerup'].forEach(type=>textarea.addEventListener(type,remember));
@@ -452,6 +485,7 @@ function wireEvents(){
   refs.copyYesterdayBtn.onclick=()=>{ const d=new Date(selectedDate+'T00:00:00'); d.setDate(d.getDate()-1); const y=dateKey(d); if(state.books[y]){ ensureDay(selectedDate); state.books[selectedDate]={...state.books[selectedDate],homework:state.books[y].homework||''}; renderBook(); save(); } else alert('前一天沒有聯絡簿內容'); };
   refs.markPhoneticBtn.onmousedown=e=>e.preventDefault();
   refs.markPhoneticBtn.onclick=openPhoneticEditor;
+  if(refs.morningMarkPhoneticBtn) refs.morningMarkPhoneticBtn.onmousedown=e=>e.preventDefault();
   refs.savePhoneticBtn.onclick=savePhoneticAnnotation;
   refs.clearPhoneticBtn.onclick=clearPhoneticAnnotation;
   refs.writingModeBtn.onclick=()=>{ state.settings.writingMode='horizontal'; renderBook(); save(); };
@@ -466,6 +500,15 @@ function wireEvents(){
   refs.settingsBtn.onclick=()=>refs.settingsDialog.showModal();
   refs.classNameInput.oninput=()=>{ state.settings.className=refs.classNameInput.value.trim(); refs.lunarText.textContent=getClassName(); save(); };
   if(refs.showAttendanceToggle) refs.showAttendanceToggle.onchange=()=>{ state.settings.showAttendance=refs.showAttendanceToggle.checked; applyLayout(); renderAll(); save(); };
+  if(refs.showMorningToggle) refs.showMorningToggle.onchange=()=>{ state.settings.showMorning=refs.showMorningToggle.checked; applyLayout(); renderAll(); save(); };
+  if(refs.morningEditBtn) refs.morningEditBtn.onclick=()=>{ morningEditMode=!morningEditMode; renderMorning(); };
+  if(refs.morningMarkPhoneticBtn) refs.morningMarkPhoneticBtn.onclick=openPhoneticEditor;
+  if(refs.saveMorningBtn) refs.saveMorningBtn.onclick=()=>{ writeMorningFromInput(); morningEditMode=false; renderMorning(); save(); };
+  if(refs.morningInput){
+    const rememberMorning=()=>capturePhoneticSelection(refs.morningInput);
+    refs.morningInput.addEventListener('input',()=>{ writeMorningFromInput(); rememberMorning(); save(); if(refs.morningAutosaveHint) refs.morningAutosaveHint.textContent='已自動儲存：'+nowTime(); });
+    ['focus','select','keyup','mouseup','pointerup'].forEach(type=>refs.morningInput.addEventListener(type,rememberMorning));
+  }
   refs.clearAllAttendanceBtn.onclick=clearAllAttendanceRecords;
   refs.signInBtn.onclick=signInTeacher;
   refs.signOutBtn.onclick=signOutTeacher;
@@ -506,12 +549,20 @@ function applyFormatSettings(){
   refs.editor.dataset.fontFamily=fontKey;
   refs.bookDisplay.dataset.phoneticMode=mode;
   refs.editor.dataset.phoneticMode=mode;
+  if(refs.morningDisplay) refs.morningDisplay.dataset.phoneticMode=mode;
+  if(refs.morningEditor) refs.morningEditor.dataset.phoneticMode=mode;
   refs.bookDisplay.style.setProperty('--book-font-scale',scale);
   refs.editor.style.setProperty('--book-font-scale',scale);
+  refs.morningDisplay?.style.setProperty('--book-font-scale',scale);
+  refs.morningEditor?.style.setProperty('--book-font-scale',scale);
   refs.bookDisplay.style.setProperty('--book-line-height-scale',lineHeightScale);
   refs.editor.style.setProperty('--book-line-height-scale',lineHeightScale);
+  refs.morningDisplay?.style.setProperty('--book-line-height-scale',lineHeightScale);
+  refs.morningEditor?.style.setProperty('--book-line-height-scale',lineHeightScale);
   refs.bookDisplay.style.setProperty('--book-font-family',family);
   refs.editor.style.setProperty('--book-font-family',FONT_STACKS[fontKey]||FONT_STACKS.default);
+  refs.morningDisplay?.style.setProperty('--book-font-family',family);
+  refs.morningEditor?.style.setProperty('--book-font-family',FONT_STACKS[fontKey]||FONT_STACKS.default);
   refs.fontScaleLabel.textContent=Math.round(scale*100)+'%';
   refs.lineHeightLabel.textContent=Math.round(lineHeightScale*100)+'%';
   refs.fontFamilySelect.value=fontKey;
@@ -521,13 +572,14 @@ function setBookAlign(align){ state.settings.textAlign=align; applyBookAlign(); 
 function applyBookAlign(){
   const align=['left','center','right'].includes(state.settings.textAlign) ? state.settings.textAlign : 'center';
   refs.bookDisplay.dataset.align=align;
+  if(refs.morningDisplay) refs.morningDisplay.dataset.align=align;
   [[refs.alignLeftBtn,'left'],[refs.alignCenterBtn,'center'],[refs.alignRightBtn,'right']].forEach(([btn,value])=>{
     if(!btn) return;
     btn.classList.toggle('active',align===value);
     btn.setAttribute('aria-pressed',String(align===value));
   });
 }
-function renderAll(){ refs.selectedDateLabel.textContent=displayDate(selectedDate); applyFontScale(); applyBookAlign(); renderBook(); renderAttendance(); }
+function renderAll(){ refs.selectedDateLabel.textContent=displayDate(selectedDate); if(refs.morningDateLabel) refs.morningDateLabel.textContent=displayDate(selectedDate); applyFontScale(); applyBookAlign(); renderBook(); renderMorning(); renderAttendance(); }
 function renderParentShareLoading(){
   document.body.classList.add('parent-share-mode');
   refs.selectedDateLabel.textContent='正在讀取...';
@@ -596,8 +648,12 @@ function getValidPhoneticMap(fieldKey,fullText){
   });
   return map;
 }
+function getTextForField(fieldKey){
+  if(fieldKey==='morning') return state.morningNotes?.[selectedDate] || '';
+  return state.books[selectedDate]?.[fieldKey] || '';
+}
 function renderIvsText(text,fieldKey,lineStart){
-  const fullText=state.books[selectedDate]?.[fieldKey] || '';
+  const fullText=getTextForField(fieldKey);
   const notes=getValidPhoneticMap(fieldKey,fullText);
   return String(text).split(/([A-Za-zＡ-Ｚａ-ｚ]+(?:\s*[．.・‧·]?\s*)[0-9０-９]+(?:\s*[－—–～〜~-]\s*[0-9０-９]+)?|[A-Za-zＡ-Ｚａ-ｚ]+|[0-9０-９]+(?:\s*[－—–～〜~-]\s*[0-9０-９]+)*)/g).map((part,partIndex,parts)=>{
     if(!part) return '';
@@ -630,7 +686,7 @@ function renderZhuyinOnlyToken(note){
   return `<span class="zhuyin-only-token"><span class="zhuyin-body">${escapeHtml(body)}</span><span class="zhuyin-tone">${escapeHtml(tone)}</span></span>`;
 }
 function renderZhuyinOnlyText(text,fieldKey,lineStart){
-  const fullText=state.books[selectedDate]?.[fieldKey] || '';
+  const fullText=getTextForField(fieldKey);
   const notes=getValidPhoneticMap(fieldKey,fullText);
   return String(text).split(/([A-Za-zＡ-Ｚａ-ｚ]+(?:\s*[．.・‧·]?\s*)[0-9０-９]+(?:\s*[－—–～〜~-]\s*[0-9０-９]+)?|[A-Za-zＡ-Ｚａ-ｚ]+|[0-9０-９]+(?:\s*[－—–～〜~-]\s*[0-9０-９]+)*)/g).map((part,partIndex,parts)=>{
     if(!part) return '';
@@ -669,12 +725,34 @@ function renderBook(){
   refs.bookDisplay.dataset.visibleCount=visibleCount;
   refs.emptyBookMessage.style.display= any ? 'none':'grid'; refs.editor.classList.toggle('hidden',!editMode); refs.bookDisplay.classList.toggle('hidden',editMode); refs.editBtn.textContent=editMode?'返回':'編輯'; fitBookTextSoon();
 }
+function renderMorning(){
+  if(!refs.morningPanel) return;
+  ensureDay(selectedDate);
+  const visible=!cloud.parentShareId && state.settings.showMorning===true;
+  refs.morningPanel.classList.toggle('editing',morningEditMode);
+  refs.morningPanel.classList.toggle('hidden',!visible);
+  if(!visible) return;
+  if(refs.morningDateLabel) refs.morningDateLabel.textContent=displayDate(selectedDate);
+  const text=state.morningNotes?.[selectedDate] || '';
+  const entries=getBookLineEntries(text);
+  refs.morningView.innerHTML=formatBookText(entries,1,'morning');
+  refs.morningInput.value=text;
+  refs.morningDisplay.classList.toggle('vertical-mode',state.settings.writingMode==='vertical');
+  refs.morningDisplay.classList.toggle('horizontal-mode',state.settings.writingMode!=='vertical');
+  refs.morningDisplay.dataset.visibleCount=entries.length ? 1 : 0;
+  refs.morningEditor.classList.toggle('hidden',!morningEditMode);
+  refs.morningDisplay.classList.toggle('hidden',morningEditMode);
+  refs.morningEditBtn.textContent=morningEditMode?'返回':'編輯';
+  refs.morningCard.style.display=entries.length ? '' : 'none';
+  refs.emptyMorningMessage.style.display=entries.length ? 'none' : 'grid';
+  fitBookTextSoon();
+}
 function fitBookTextSoon(){ requestAnimationFrame(()=>requestAnimationFrame(fitBookText)); }
 function fitBookText(){
   if(editMode || refs.bookDisplay.classList.contains('hidden')) return;
   const scale=state.settings.fontScale||1;
   const visibleCount=Number(refs.bookDisplay.dataset.visibleCount||0);
-  const cards=[refs.homeworkCard,refs.reminderCard,refs.testCard,refs.noteCard,refs.teacherCard].filter(card=>card.style.display!=='none');
+  const cards=[refs.homeworkCard,refs.reminderCard,refs.testCard,refs.noteCard,refs.teacherCard,refs.morningCard].filter(card=>card && card.style.display!=='none' && !card.closest('.book-display')?.classList.contains('hidden'));
   cards.forEach(card=>{
     const text=card.querySelector('.book-text'), title=card.querySelector('h2');
     if(!text || !title) return;
@@ -705,8 +783,15 @@ function bookInputEntries(){
     ['reminder',refs.reminderInput],
     ['test',refs.testInput],
     ['note',refs.noteInput],
-    ['teacher',refs.teacherInput]
+    ['teacher',refs.teacherInput],
+    ['morning',refs.morningInput]
   ];
+}
+function contactBookInputEntries(){ return bookInputEntries().filter(([field])=>field!=='morning'); }
+function writeMorningFromInput(){
+  ensureDay(selectedDate);
+  state.morningNotes[selectedDate]=refs.morningInput?.value || '';
+  pruneInvalidPhonetics(selectedDate,'morning',state.morningNotes[selectedDate] || '');
 }
 function pruneInvalidPhonetics(dateKeyValue,fieldKey,text){
   const day=state.bookPhonetics?.[dateKeyValue];
@@ -787,9 +872,10 @@ function renderPhoneticChoices(target,selectedNote=''){
   selectedPhoneticVariant=matchIndex>=0 ? matchIndex : 0;
 }
 function openPhoneticEditor(){
-  writeBookFromInputs();
+  if(document.activeElement===refs.morningInput) writeMorningFromInput();
+  else writeBookFromInputs();
   const target=currentPhoneticTarget();
-  if(!target){ alert('請先在聯絡簿文字框中選取一個中文字，再按「標注破音」。'); return; }
+  if(!target){ alert('請先在文字框中選取一個中文字，再按「標注破音」。'); return; }
   selectedPhoneticTarget=target;
   const existing=existingPhoneticForTarget(target);
   refs.phoneticChar.textContent=target.char;
@@ -806,9 +892,10 @@ function savePhoneticAnnotation(){
   if(!choices.length){ alert('這個字暫無內建破音候選，會使用字型預設注音。'); return; }
   if(!isValidZhuyin(note) || !choices.includes(note)){ alert('請先點選一個候選讀音。'); return; }
   ensureDay(selectedDate);
-  writeBookFromInputs();
+  if(selectedPhoneticTarget.field==='morning') writeMorningFromInput();
+  else writeBookFromInputs();
   const target=selectedPhoneticTarget;
-  if((state.books[selectedDate]?.[target.field] || '')[target.index]!==target.char){ alert('文字已變更，請重新選取要標注的字。'); return; }
+  if(getTextForField(target.field)[target.index]!==target.char){ alert('文字已變更，請重新選取要標注的字。'); return; }
   const matchedVariant=choices.indexOf(note);
   const variant=matchedVariant>=0 ? matchedVariant : selectedPhoneticVariant;
   const day=state.bookPhonetics[selectedDate];
@@ -820,6 +907,7 @@ function savePhoneticAnnotation(){
   refs.phoneticDialog.close();
   applyFormatSettings();
   renderBook();
+  renderMorning();
   save();
 }
 function clearPhoneticAnnotation(){
@@ -833,6 +921,7 @@ function clearPhoneticAnnotation(){
   }
   refs.phoneticDialog.close();
   renderBook();
+  renderMorning();
   save();
 }
 function teacherWelcomeHint(){
@@ -914,6 +1003,7 @@ function serializeTeacherState(){
     books:state.books,
     bookFields:state.bookFields || {},
     bookPhonetics:state.bookPhonetics || {},
+    morningNotes:state.morningNotes || {},
     attendance:state.attendance,
     settings:state.settings,
     className:getClassName(),
@@ -964,6 +1054,7 @@ function applyStateFromCloud(nextState){
   refs.phoneticModeSelect.value=state.settings.phoneticMode || 'none';
   refs.classNameInput.value=state.settings.className || '';
   if(refs.showAttendanceToggle) refs.showAttendanceToggle.checked=state.settings.showAttendance!==false;
+  if(refs.showMorningToggle) refs.showMorningToggle.checked=state.settings.showMorning===true;
   updateLateTimeDisplay();
   applyLayout();
   renderAll();

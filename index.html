@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>中山國小聯絡簿與學生簽到系統</title>
-  <link rel="stylesheet" href="style.css?v=20260903-attendance-display-toggle" />
+  <link rel="stylesheet" href="style.css?v=20260903-morning-resize" />
 </head>
 <body>
   <div class="app-shell">
@@ -151,7 +151,41 @@
           <div id="autosaveHint" class="subtle">資料會自動儲存在本機瀏覽器。</div>
         </div>
       </section>
+      <div id="morningResizeHandle" class="resize-handle main-resize morning-resize" title="拖曳調整聯絡簿與早自修比例"></div>
       <div id="mainResizeHandle" class="resize-handle main-resize" title="拖曳調整左右區域大小"></div>
+
+      <section class="panel morning-panel">
+        <div class="panel-head">
+          <div>
+            <h1><span class="title-icon morning">☀</span>早自修專區</h1>
+          </div>
+          <div class="head-actions">
+            <div id="morningDateLabel" class="date-display-control">----</div>
+            <button id="morningEditBtn" class="primary-btn">編輯</button>
+          </div>
+        </div>
+        <div id="morningDisplay" class="book-display morning-display horizontal-mode">
+          <article id="morningCard" class="book-card morning-card">
+            <div class="circle-icon">☀</div>
+            <div>
+              <h2>早自修交代事項</h2>
+              <div id="morningView" class="book-text"></div>
+            </div>
+          </article>
+          <div id="emptyMorningMessage" class="empty-message">今天尚未填寫早自修事項</div>
+        </div>
+        <div id="morningEditor" class="editor morning-editor hidden">
+          <div class="editor-field">
+            <label for="morningInput">早自修交代事項</label>
+            <textarea id="morningInput" rows="6"></textarea>
+          </div>
+          <div class="editor-actions">
+            <button id="morningMarkPhoneticBtn" class="white-btn" type="button">標注破音</button>
+            <button id="saveMorningBtn" class="primary-btn">儲存</button>
+          </div>
+          <div id="morningAutosaveHint" class="subtle">資料會自動儲存在本機瀏覽器。</div>
+        </div>
+      </section>
 
       <section class="panel attendance-panel">
         <div class="panel-head attendance-head">
@@ -254,9 +288,16 @@
       <label class="display-option-field" for="showAttendanceToggle">
         <span>
           <strong>顯示學生簽到區</strong>
-          <small>關閉後主畫面只顯示聯絡簿</small>
+          <small>關閉後主畫面不顯示簽到簿</small>
         </span>
         <input id="showAttendanceToggle" type="checkbox" />
+      </label>
+      <label class="display-option-field" for="showMorningToggle">
+        <span>
+          <strong>顯示早自修專區</strong>
+          <small>開啟後可編輯當天早自修交代事項</small>
+        </span>
+        <input id="showMorningToggle" type="checkbox" />
       </label>
       <div id="wakeLockStatus" class="wake-lock-status" role="status">螢幕喚醒準備中</div>
       <button id="clearAllAttendanceBtn" class="danger-btn settings-danger-btn" type="button">清除所有出席紀錄</button>
@@ -275,6 +316,6 @@
 
   <script src="firebase-config.js"></script>
   <script src="phonetic-data.js"></script>
-  <script src="app.js?v=20260903-attendance-display-toggle"></script>
+  <script src="app.js?v=20260903-morning-resize"></script>
 </body>
 </html>
