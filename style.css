@@ -1185,7 +1185,7 @@
   display:flex!important;
   flex-direction:column!important;
 }
-.parent-share-mode .book-display .book-card{
+.parent-share-mode .book-display .book-card:not([style*="display: none"]){
   display:grid!important;
   grid-template-columns:48px minmax(0,1fr)!important;
   height:auto!important;
@@ -1197,4 +1197,14 @@
   display:flex!important;
   flex-direction:row!important;
   align-items:flex-start!important;
+  justify-content:flex-start!important;
+}
+.parent-share-mode .book-display .book-card h2,
+.parent-share-mode .book-display .book-text{
+  text-align:left!important;
+}
+.parent-share-mode .book-display .inline-token,
+.parent-share-mode .book-display .zhuyin-only-token{
+  display:inline!important;
+  white-space:normal!important;
 }

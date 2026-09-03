@@ -1030,7 +1030,7 @@ function serializePublicShare(){
     shareAttendance,
     books:pickDates(state.books,()=>({homework:'',reminder:'',test:'',note:'',teacher:''})),
     bookFields:pickDates(state.bookFields,()=>defaultBookFields()),
-    bookPhonetics:pickDates(state.bookPhonetics,()=>({})),
+    bookPhonetics:pickDates({},()=>({})),
     attendance:shareAttendance ? {[today]:state.attendance[today] || {}} : {},
     students:shareAttendance ? state.students.map(st=>({seat:st.seat,name:`${st.seat}號`})) : [],
     settings:{
@@ -1039,7 +1039,7 @@ function serializePublicShare(){
       lineHeightScale:state.settings.lineHeightScale,
       fontFamily:state.settings.fontFamily,
       phoneticMode:'none',
-      textAlign:state.settings.textAlign,
+      textAlign:'left',
       className:state.settings.className || ''
     },
     updatedAt:cloud.api.serverTimestamp()
@@ -1177,9 +1177,9 @@ async function loadParentShare(){
       students:data.students || defaultStudents,
       books:data.books || {},
       bookFields:data.bookFields || {},
-      bookPhonetics:data.bookPhonetics || {},
+      bookPhonetics:cloud.parentShareId ? {} : (data.bookPhonetics || {}),
       attendance:data.attendance || {},
-      settings:{...state.settings,...(data.settings||{}),writingMode:'horizontal',phoneticMode:'none',className:parentShareClassLabel(data)}
+      settings:{...state.settings,...(data.settings||{}),writingMode:'horizontal',phoneticMode:'none',textAlign:'left',className:parentShareClassLabel(data)}
     });
     ensureDay(selectedDate);
     refs.classNameInput.value=state.settings.className || '';
