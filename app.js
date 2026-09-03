@@ -942,6 +942,10 @@ function serializePublicShare(){
   };
 }
 function parentShareDisplayDate(){ return todayKey(); }
+function parentShareClassLabel(data={}){
+  const settingsLabel=String(data.settings?.className || '').trim();
+  return settingsLabel || classLabelFromTitle(data.className) || '班級';
+}
 function applyStateFromCloud(nextState){
   isApplyingRemoteState=true;
   state=normalizeState(nextState);
@@ -1069,7 +1073,7 @@ async function loadParentShare(){
       bookFields:data.bookFields || {},
       bookPhonetics:data.bookPhonetics || {},
       attendance:data.attendance || {},
-      settings:{...state.settings,...(data.settings||{}),phoneticMode:'none',className:data.settings?.className ?? classLabelFromTitle(data.className)}
+      settings:{...state.settings,...(data.settings||{}),phoneticMode:'none',className:parentShareClassLabel(data)}
     });
     ensureDay(selectedDate);
     refs.classNameInput.value=state.settings.className || '';

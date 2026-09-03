@@ -1053,3 +1053,84 @@
     margin-top:0;
   }
 }
+
+/* parent share title */
+.parent-share-mode .school-temp{
+  display:none!important;
+}
+.parent-share-mode .hero-clock{
+  min-height:96px;
+  height:auto!important;
+  padding:16px 20px;
+}
+.parent-share-mode .date-block{
+  width:100%;
+  max-width:1080px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:
+    "class date"
+    "class week";
+  align-items:center;
+  column-gap:24px;
+  row-gap:3px;
+  text-align:left;
+}
+.parent-share-mode .lunar-pill{
+  grid-area:class;
+  justify-self:start;
+  max-width:100%;
+  margin:0;
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+  color:#fff;
+  font-size:clamp(30px,5.5vw,52px);
+  font-weight:950;
+  line-height:1.08;
+  white-space:normal;
+  overflow:visible;
+  text-overflow:clip;
+}
+.parent-share-mode .date-full{
+  grid-area:date;
+  justify-self:end;
+  color:#d9ebff;
+  font-size:clamp(18px,2.6vw,28px);
+  font-weight:950;
+  line-height:1.15;
+  white-space:nowrap;
+  text-align:right;
+}
+.parent-share-mode .week-text{
+  grid-area:week;
+  justify-self:end;
+  margin:0;
+  font-size:clamp(24px,4.2vw,42px);
+  line-height:1.08;
+  letter-spacing:0;
+  text-align:right;
+}
+
+@media(max-width:700px) and (orientation:portrait){
+  .parent-share-mode .hero-clock{
+    padding:12px;
+    min-height:82px!important;
+  }
+  .parent-share-mode .date-block{
+    grid-template-columns:minmax(0,1fr) auto;
+    column-gap:10px;
+    row-gap:2px;
+  }
+  .parent-share-mode .lunar-pill{
+    font-size:clamp(26px,8.2vw,34px);
+  }
+  .parent-share-mode .date-full{
+    font-size:clamp(14px,4.2vw,18px);
+  }
+  .parent-share-mode .week-text{
+    font-size:clamp(22px,6.4vw,28px);
+  }
+}
