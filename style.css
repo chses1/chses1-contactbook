@@ -420,6 +420,8 @@
 .settings-body{padding:18px 22px 22px}
 .class-name-field{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:10px;padding:10px 12px;border:1px solid #dbe7f5;border-radius:12px;background:#f8fbff;color:#17315c;font-weight:950}
 .class-name-field input{width:100%;height:42px;border:1px solid #cbd9eb;border-radius:10px;background:#fff;padding:0 12px;color:#13284c;font-size:17px;font-weight:900}
+.display-option-field{display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px;padding:12px;border:1px solid #dbe7f5;border-radius:12px;background:#f8fbff;color:#17315c}
+.display-option-field span{display:grid;gap:3px}.display-option-field strong{font-size:17px;font-weight:950}.display-option-field small{color:#64748b;font-size:14px;font-weight:800}.display-option-field input{width:22px;height:22px;accent-color:#1167df}
 .wake-lock-status{padding:10px 12px;border:1px solid #cbd9eb;border-radius:12px;background:#f8fbff;color:#334155;font-size:15px;font-weight:900;text-align:center}
 .wake-lock-status[data-status="active"]{background:#ecfdf5;border-color:#86efac;color:#166534}
 .wake-lock-status[data-status="failed"],.wake-lock-status[data-status="unsupported"]{background:#fff7ed;border-color:#fdba74;color:#9a3412}
@@ -442,6 +444,9 @@
 .hero-clock{grid-template-columns:minmax(390px,1.35fr) minmax(145px,.45fr) minmax(190px,.62fr) minmax(220px,.7fr);gap:12px;padding-left:24px;padding-right:24px}
 .hero-clock:before{inset:0}
 .contact-panel .panel-head{flex-wrap:wrap}
+.attendance-hidden .attendance-panel,.attendance-hidden #mainResizeHandle,.attendance-hidden #swapPanelsBtn{display:none!important}
+.attendance-hidden .main-grid{grid-template-columns:1fr!important}
+.attendance-hidden .contact-panel{grid-column:1!important}
 .parent-share-mode .hero-clock{display:grid!important;grid-template-columns:1fr!important;height:auto!important;min-height:94px;padding:14px 20px;border-radius:0 0 22px 22px}
 .parent-share-mode .clock-block{display:none!important}
 .parent-share-mode .date-block{grid-column:1;text-align:center}

@@ -54,7 +54,7 @@ const refs = {
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
   statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),allOnTimeBtn:$('allOnTimeBtn'),resetBtn:$('resetBtn'),lastSaved:$('lastSaved'),
   studentDialog:$('studentDialog'),studentTitle:$('studentTitle'),studentDetail:$('studentDetail'),markOnTimeBtn:$('markOnTimeBtn'),markLateBtn:$('markLateBtn'),markLeaveBtn:$('markLeaveBtn'),markAbsentBtn:$('markAbsentBtn'),
-  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),phoneticDialog:$('phoneticDialog'),phoneticChar:$('phoneticChar'),phoneticChoices:$('phoneticChoices'),phoneticInput:$('phoneticInput'),savePhoneticBtn:$('savePhoneticBtn'),clearPhoneticBtn:$('clearPhoneticBtn'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput'),wakeLockStatus:$('wakeLockStatus'),clearAllAttendanceBtn:$('clearAllAttendanceBtn')
+  namesDialog:$('namesDialog'),namesInput:$('namesInput'),saveNamesBtn:$('saveNamesBtn'),resetNamesBtn:$('resetNamesBtn'),infoDialog:$('infoDialog'),infoTitle:$('infoTitle'),infoContent:$('infoContent'),phoneticDialog:$('phoneticDialog'),phoneticChar:$('phoneticChar'),phoneticChoices:$('phoneticChoices'),phoneticInput:$('phoneticInput'),savePhoneticBtn:$('savePhoneticBtn'),clearPhoneticBtn:$('clearPhoneticBtn'),settingsDialog:$('settingsDialog'),classNameInput:$('classNameInput'),showAttendanceToggle:$('showAttendanceToggle'),wakeLockStatus:$('wakeLockStatus'),clearAllAttendanceBtn:$('clearAllAttendanceBtn')
 };
 let state = loadState();
 let selectedDate = dateKey(new Date());
@@ -117,6 +117,7 @@ function normalizeState(s={}){
       phoneticMode:normalizePhoneticMode(s.settings || {}),
       textAlign:s.settings?.textAlign || 'center',
       className:s.settings?.className || '',
+      showAttendance:s.settings?.showAttendance !== false,
       layout:s.settings?.layout || {}
     }
   };
@@ -146,7 +147,7 @@ function getEnabledBookFields(key=selectedDate){
   return {...defaultBookFields(),...(state.bookFields[key]||{})};
 }
 function init(){
-  refs.datePicker.value=selectedDate; refs.lateTime.value=state.settings.lateTime; refs.fontFamilySelect.value=state.settings.fontFamily||'default'; refs.phoneticModeSelect.value=state.settings.phoneticMode||'none'; refs.classNameInput.value=state.settings.className||''; ensureDay(selectedDate);
+  refs.datePicker.value=selectedDate; refs.lateTime.value=state.settings.lateTime; refs.fontFamilySelect.value=state.settings.fontFamily||'default'; refs.phoneticModeSelect.value=state.settings.phoneticMode||'none'; refs.classNameInput.value=state.settings.className||''; if(refs.showAttendanceToggle) refs.showAttendanceToggle.checked=state.settings.showAttendance!==false; ensureDay(selectedDate);
   applyLayout();
   updateLateTimeDisplay();
   wireEvents(); installLayoutResizers(); installResponsiveSizing(); tick(); setInterval(tick,1000);
@@ -166,8 +167,14 @@ function updateLateTimeDisplay(){
 }
 function clamp(n,min,max){ return Math.max(min,Math.min(max,n)); }
 function getLayout(){ if(!state.settings.layout) state.settings.layout={}; return state.settings.layout; }
+function applyAttendanceVisibility(){
+  const hidden=!cloud.parentShareId && state.settings.showAttendance===false;
+  document.body.classList.toggle('attendance-hidden',hidden);
+  if(refs.swapPanelsBtn) refs.swapPanelsBtn.disabled=hidden;
+}
 function applyLayout(){
   const layout=getLayout();
+  applyAttendanceVisibility();
   if(!layout.topHeight) layout.topHeight=172;
   if(!layout.leftRatio) layout.leftRatio=.5;
   const maxTopHeight=clamp(Math.round(window.innerHeight*.28),112,300);
@@ -458,6 +465,7 @@ function wireEvents(){
   refs.recordsBtn.onclick=showRecords;
   refs.settingsBtn.onclick=()=>refs.settingsDialog.showModal();
   refs.classNameInput.oninput=()=>{ state.settings.className=refs.classNameInput.value.trim(); refs.lunarText.textContent=getClassName(); save(); };
+  if(refs.showAttendanceToggle) refs.showAttendanceToggle.onchange=()=>{ state.settings.showAttendance=refs.showAttendanceToggle.checked; applyLayout(); renderAll(); save(); };
   refs.clearAllAttendanceBtn.onclick=clearAllAttendanceRecords;
   refs.signInBtn.onclick=signInTeacher;
   refs.signOutBtn.onclick=signOutTeacher;
@@ -955,6 +963,7 @@ function applyStateFromCloud(nextState){
   refs.fontFamilySelect.value=state.settings.fontFamily || 'default';
   refs.phoneticModeSelect.value=state.settings.phoneticMode || 'none';
   refs.classNameInput.value=state.settings.className || '';
+  if(refs.showAttendanceToggle) refs.showAttendanceToggle.checked=state.settings.showAttendance!==false;
   updateLateTimeDisplay();
   applyLayout();
   renderAll();

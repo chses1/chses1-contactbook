@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>中山國小聯絡簿與學生簽到系統</title>
-  <link rel="stylesheet" href="style.css?v=20260903-parent-title" />
+  <link rel="stylesheet" href="style.css?v=20260903-attendance-display-toggle" />
 </head>
 <body>
   <div class="app-shell">
@@ -251,6 +251,13 @@
         <span>班級名稱</span>
         <input id="classNameInput" type="text" placeholder="班級" maxlength="12" />
       </label>
+      <label class="display-option-field" for="showAttendanceToggle">
+        <span>
+          <strong>顯示學生簽到區</strong>
+          <small>關閉後主畫面只顯示聯絡簿</small>
+        </span>
+        <input id="showAttendanceToggle" type="checkbox" />
+      </label>
       <div id="wakeLockStatus" class="wake-lock-status" role="status">螢幕喚醒準備中</div>
       <button id="clearAllAttendanceBtn" class="danger-btn settings-danger-btn" type="button">清除所有出席紀錄</button>
       <section class="cloud-bar settings-cloud-bar">
@@ -268,6 +275,6 @@
 
   <script src="firebase-config.js"></script>
   <script src="phonetic-data.js"></script>
-  <script src="app.js?v=20260903-parent-title"></script>
+  <script src="app.js?v=20260903-attendance-display-toggle"></script>
 </body>
 </html>
