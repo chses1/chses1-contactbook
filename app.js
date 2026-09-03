@@ -1034,7 +1034,7 @@ function serializePublicShare(){
     attendance:shareAttendance ? {[today]:state.attendance[today] || {}} : {},
     students:shareAttendance ? state.students.map(st=>({seat:st.seat,name:`${st.seat}號`})) : [],
     settings:{
-      writingMode:state.settings.writingMode,
+      writingMode:'horizontal',
       fontScale:state.settings.fontScale,
       lineHeightScale:state.settings.lineHeightScale,
       fontFamily:state.settings.fontFamily,
@@ -1179,7 +1179,7 @@ async function loadParentShare(){
       bookFields:data.bookFields || {},
       bookPhonetics:data.bookPhonetics || {},
       attendance:data.attendance || {},
-      settings:{...state.settings,...(data.settings||{}),phoneticMode:'none',className:parentShareClassLabel(data)}
+      settings:{...state.settings,...(data.settings||{}),writingMode:'horizontal',phoneticMode:'none',className:parentShareClassLabel(data)}
     });
     ensureDay(selectedDate);
     refs.classNameInput.value=state.settings.className || '';
