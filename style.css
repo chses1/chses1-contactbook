@@ -1184,11 +1184,18 @@
 .parent-share-mode .book-display{
   display:flex!important;
   flex-direction:column!important;
+  flex:0 0 auto!important;
+  gap:10px!important;
+  margin-top:0!important;
 }
 .parent-share-mode .book-display .book-card:not([style*="display: none"]){
   display:grid!important;
   grid-template-columns:48px minmax(0,1fr)!important;
+  align-items:start!important;
+  flex:0 0 auto!important;
+  min-height:0!important;
   height:auto!important;
+  padding:14px 16px!important;
 }
 .parent-share-mode .book-display .book-text{
   display:block!important;
@@ -1207,4 +1214,33 @@
 .parent-share-mode .book-display .zhuyin-only-token{
   display:inline!important;
   white-space:normal!important;
+}
+.parent-share-mode .contact-panel{
+  flex:0 0 auto!important;
+  min-height:0!important;
+  height:auto!important;
+}
+.parent-share-mode .main-grid{
+  align-content:start!important;
+}
+.parent-share-mode:not(.share-attendance-enabled) .panel{
+  min-height:0!important;
+}
+
+@media(max-width:700px) and (orientation:portrait){
+  .parent-share-mode .panel,
+  .parent-share-mode .contact-panel{
+    min-height:0!important;
+    height:auto!important;
+  }
+  .parent-share-mode .book-display .book-card:not([style*="display: none"]){
+    grid-template-columns:34px minmax(0,1fr)!important;
+    padding:12px 13px!important;
+  }
+  .parent-share-mode .book-card h2{
+    margin-bottom:4px!important;
+  }
+  .parent-share-mode .book-text{
+    line-height:1.45!important;
+  }
 }
