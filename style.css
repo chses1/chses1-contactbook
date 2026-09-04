@@ -464,7 +464,7 @@
 .morning-visible .main-grid.panels-swapped .morning-panel{grid-column:3!important}
 .morning-visible .main-grid.panels-swapped .morning-resize{grid-column:4!important}
 .morning-visible .main-grid.panels-swapped .contact-panel{grid-column:5!important}
-.attendance-hidden.morning-visible .main-grid{grid-template-columns:minmax(300px,1fr) 10px minmax(300px,1fr)!important}
+.attendance-hidden.morning-visible .main-grid{grid-template-columns:minmax(300px,var(--contact-track,.5fr)) 10px minmax(300px,var(--morning-track,.5fr))!important}
 .attendance-hidden.morning-visible .contact-panel{grid-column:1!important;grid-row:1!important}
 .attendance-hidden.morning-visible .morning-resize{grid-column:2!important}
 .attendance-hidden.morning-visible .morning-panel{grid-column:3!important}
