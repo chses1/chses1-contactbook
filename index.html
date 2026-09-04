@@ -4,11 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>中山國小聯絡簿與學生簽到系統</title>
-  <link rel="stylesheet" href="style.css?v=20260903-parent-auto-height" />
+  <link rel="stylesheet" href="style.css?v=20260904-header-clean" />
 </head>
 <body>
   <div class="app-shell">
     <header class="hero-clock">
+      <section class="date-block">
+        <div id="lunarText" class="lunar-pill">班級聯絡簿</div>
+        <div id="dateFull" class="date-full">----</div>
+        <a id="schoolTempLink" class="school-temp temp-unknown" href="https://tyn-air.tydep.gov.tw/Dashboard/Dashboard.aspx?Id=4" target="_blank" rel="noopener">氣溫暫無資料</a>
+      </section>
       <section class="clock-block">
         <div class="clock-card">
           <div id="clock" class="digital-clock" aria-live="polite">
@@ -19,22 +24,6 @@
             <span id="clockSeconds" class="time-cell seconds">--</span>
           </div>
         </div>
-      </section>
-      <section class="date-block">
-        <div id="dateFull" class="date-full">----</div>
-        <div id="weekText" class="week-text">----</div>
-        <a id="schoolTempLink" class="school-temp temp-unknown" href="https://tyn-air.tydep.gov.tw/Dashboard/Dashboard.aspx?Id=4" target="_blank" rel="noopener">氣溫暫無資料</a>
-        <div id="lunarText" class="lunar-pill">班級聯絡簿</div>
-      </section>
-      <section class="arrival-card">
-        <div class="arrival-title">◷ 遲到時間設定</div>
-        <label class="late-time-shell" for="lateTime">
-          <input id="lateTime" class="late-time-input" type="time" value="07:50" />
-          <span id="lateHour" class="late-time-part">07</span>
-          <span class="late-time-colon">:</span>
-          <span id="lateMinute" class="late-time-part">50</span>
-        </label>
-        <div id="timeStatus" class="arrival-status">準時時段 ✅</div>
       </section>
       <section class="top-buttons">
         <button id="calendarBtn" class="icon-btn blue">▣<span>校行事曆</span></button>
@@ -285,6 +274,13 @@
         <span>班級名稱</span>
         <input id="classNameInput" type="text" placeholder="班級" maxlength="12" />
       </label>
+      <label class="display-option-field late-setting-field" for="lateTime">
+        <span>
+          <strong>遲到時間</strong>
+          <small id="timeStatus">準時時段</small>
+        </span>
+        <input id="lateTime" type="time" value="07:50" />
+      </label>
       <label class="display-option-field" for="showAttendanceToggle">
         <span>
           <strong>顯示學生簽到區</strong>
@@ -316,6 +312,6 @@
 
   <script src="firebase-config.js"></script>
   <script src="phonetic-data.js"></script>
-  <script src="app.js?v=20260903-parent-left-clean"></script>
+  <script src="app.js?v=20260904-header-clean"></script>
 </body>
 </html>

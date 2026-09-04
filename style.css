@@ -1165,8 +1165,184 @@
   .parent-share-mode .date-full{
     font-size:clamp(14px,4.2vw,18px);
   }
-  .parent-share-mode .week-text{
-    font-size:clamp(22px,6.4vw,28px);
+.parent-share-mode .week-text{
+  font-size:clamp(22px,6.4vw,28px);
+  }
+}
+
+/* simplified classroom header */
+.hero-clock{
+  grid-template-columns:minmax(230px,.7fr) minmax(430px,1.55fr) minmax(300px,.82fr)!important;
+  min-height:132px;
+  gap:18px;
+  padding:16px 28px!important;
+}
+.hero-clock:before{
+  opacity:.5;
+}
+.date-block{
+  display:grid!important;
+  align-content:center;
+  justify-items:start!important;
+  gap:8px!important;
+  min-width:0;
+  padding:0!important;
+  text-align:left!important;
+}
+.lunar-pill{
+  margin:0!important;
+  padding:0!important;
+  max-width:100%;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  color:#fff;
+  font-size:clamp(27px,calc(34px * var(--hero-scale)),40px)!important;
+  font-weight:950;
+  line-height:1.08!important;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.date-full{
+  color:#dcecff;
+  font-size:clamp(19px,calc(23px * var(--hero-scale)),27px)!important;
+  font-weight:950;
+  line-height:1.1!important;
+  white-space:nowrap;
+  text-align:left!important;
+}
+.week-text{
+  display:none!important;
+}
+.school-temp{
+  margin:0!important;
+  padding:5px 14px!important;
+  font-size:clamp(16px,calc(18px * var(--hero-scale)),21px)!important;
+}
+.clock-block{
+  display:flex!important;
+  align-items:center;
+  justify-content:center!important;
+  min-width:0;
+  overflow:hidden;
+}
+.clock-card{
+  width:100%;
+  display:flex!important;
+  align-items:center;
+  justify-content:center!important;
+  padding:0!important;
+}
+.digital-clock{
+  justify-content:center!important;
+  width:auto;
+  max-width:100%;
+  font-size:clamp(76px,calc(9vw * var(--hero-scale)),138px)!important;
+  gap:calc(var(--clock-font-size) * .035)!important;
+  transform:none!important;
+  letter-spacing:0!important;
+}
+.time-cell,.time-cell.seconds{
+  min-width:1.02em;
+}
+.time-cell.seconds{
+  font-size:.68em!important;
+  color:#e1efff;
+}
+.top-buttons{
+  justify-self:end;
+  width:min(330px,100%);
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+.icon-btn{
+  height:clamp(86px,calc(108px * var(--hero-scale)),116px)!important;
+  border-radius:15px!important;
+  font-size:clamp(29px,calc(34px * var(--hero-scale)),38px)!important;
+}
+.icon-btn span{
+  font-size:clamp(15px,calc(18px * var(--hero-scale)),20px)!important;
+  line-height:1.08!important;
+}
+.arrival-card{
+  display:none!important;
+}
+.late-setting-field input[type="time"]{
+  width:150px;
+  height:42px;
+  border:1px solid #cbd9eb;
+  border-radius:10px;
+  background:#fff;
+  color:#13284c;
+  padding:0 10px;
+  font-size:18px;
+  font-weight:950;
+  text-align:center;
+  accent-color:#1167df;
+}
+.late-setting-field small{
+  color:#64748b;
+}
+
+@media(max-width:1300px){
+  .hero-clock{
+    grid-template-columns:minmax(210px,.72fr) minmax(360px,1.45fr) minmax(280px,.86fr)!important;
+    gap:14px;
+    padding-left:22px!important;
+    padding-right:22px!important;
+  }
+  .top-buttons{
+    width:min(300px,100%);
+    gap:8px!important;
+  }
+}
+
+@media(max-width:1050px){
+  .hero-clock{
+    grid-template-columns:1fr!important;
+    justify-items:center;
+    gap:12px;
+  }
+  .date-block{
+    justify-items:center!important;
+    text-align:center!important;
+  }
+  .date-full{
+    text-align:center!important;
+  }
+  .top-buttons{
+    justify-self:center;
+    width:100%;
+    max-width:430px;
+  }
+}
+
+@media(max-width:700px) and (orientation:portrait){
+  .hero-clock{
+    padding:12px!important;
+  }
+  .lunar-pill{
+    font-size:clamp(24px,7vw,32px)!important;
+  }
+  .date-full{
+    font-size:clamp(17px,5vw,22px)!important;
+  }
+  .school-temp{
+    font-size:15px!important;
+  }
+  .digital-clock{
+    font-size:clamp(48px,16vw,72px)!important;
+  }
+  .top-buttons{
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  }
+  .icon-btn{
+    height:60px!important;
+    font-size:22px!important;
+  }
+  .icon-btn span{
+    font-size:12px!important;
   }
 }
 

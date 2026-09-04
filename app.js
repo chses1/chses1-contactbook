@@ -166,8 +166,8 @@ function init(){
 function updateLateTimeDisplay(){
   const value=refs.lateTime.value||state.settings.lateTime||'07:50';
   const [h='07',m='50']=value.split(':');
-  refs.lateHour.textContent=h;
-  refs.lateMinute.textContent=m;
+  if(refs.lateHour) refs.lateHour.textContent=h;
+  if(refs.lateMinute) refs.lateMinute.textContent=m;
   if(refs.lateLegendOnTime) refs.lateLegendOnTime.textContent=value;
   if(refs.lateLegendLate) refs.lateLegendLate.textContent=value;
 }
@@ -440,7 +440,8 @@ function tick(){
   const hh=String(n.getHours()).padStart(2,'0'), mm=String(n.getMinutes()).padStart(2,'0'), ss=String(n.getSeconds()).padStart(2,'0');
   refs.clock.setAttribute('aria-label',`${hh}:${mm}:${ss}`);
   refs.clockHours.textContent=hh; refs.clockMinutes.textContent=mm; refs.clockSeconds.textContent=ss;
-  refs.dateFull.textContent=`${n.getFullYear()}年${String(n.getMonth()+1).padStart(2,'0')}月${String(n.getDate()).padStart(2,'0')}日`; refs.weekText.textContent=`星期${'日一二三四五六'[n.getDay()]}`;
+  refs.dateFull.textContent=`${String(n.getMonth()+1).padStart(2,'0')}/${String(n.getDate()).padStart(2,'0')}（${'日一二三四五六'[n.getDay()]}）`;
+  if(refs.weekText) refs.weekText.textContent=`星期${'日一二三四五六'[n.getDay()]}`;
   if(cloud.parentShareId && cloud.parentShareLoaded && selectedDate!==currentDateKey){
     selectedDate=currentDateKey;
     ensureDay(selectedDate);
@@ -448,7 +449,7 @@ function tick(){
     renderAll();
   }
   if(!cloud.parentShareId || cloud.parentShareLoaded) refs.lunarText.textContent=getClassName();
-  const hm=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; refs.timeStatus.textContent= hm<=state.settings.lateTime ? '準時時段 ✅' : '遲到時段 ⚠️';
+  const hm=`${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; refs.timeStatus.textContent= hm<=state.settings.lateTime ? '目前：準時時段' : '目前：遲到時段';
 }
 function wireEvents(){
   refs.fullscreenBtn.onclick=()=>{ if(!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); };
