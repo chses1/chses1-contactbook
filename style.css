@@ -472,7 +472,8 @@
 .attendance-hidden.morning-visible .main-grid.panels-swapped .morning-resize{grid-column:2!important;grid-row:1!important}
 .attendance-hidden.morning-visible .main-grid.panels-swapped .morning-panel{grid-column:3!important;grid-row:1!important}
 .morning-card{border-color:#f8c84b;background:linear-gradient(110deg,#fffbea,#fff)}.morning-card h2{color:#ca8a04}.morning-card .circle-icon,.morning{background:#eab308}
-.morning-editor{grid-template-columns:1fr}.morning-editor textarea{min-height:132px;height:calc(8em + 28px)}
+.morning-editor{grid-template-columns:1fr;grid-auto-rows:auto;align-content:start;overflow-y:auto;padding:0 4px 18px 0;scrollbar-gutter:stable}
+.morning-editor textarea{min-height:132px;height:calc(8em + 28px)}
 .parent-share-mode .hero-clock{display:grid!important;grid-template-columns:1fr!important;height:auto!important;min-height:94px;padding:14px 20px;border-radius:0 0 22px 22px}
 .parent-share-mode .clock-block{display:none!important}
 .parent-share-mode .date-block{grid-column:1;text-align:center}

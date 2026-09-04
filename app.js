@@ -219,8 +219,11 @@ function updateMainLayoutWidth(){
   refs.shell.style.setProperty('--left-width',left+'px');
   const groupRatio=clamp(layout.leftRatio||.66,.28,.82);
   const contactRatio=clamp(layout.morningRatio||.5,.28,.72);
-  refs.shell.style.setProperty('--contact-track',(groupRatio*contactRatio).toFixed(3)+'fr');
-  refs.shell.style.setProperty('--morning-track',(groupRatio*(1-contactRatio)).toFixed(3)+'fr');
+  const attendanceHidden=document.body.classList.contains('attendance-hidden');
+  const morningVisible=document.body.classList.contains('morning-visible');
+  const activeGroupRatio=attendanceHidden && morningVisible ? 1 : groupRatio;
+  refs.shell.style.setProperty('--contact-track',(activeGroupRatio*contactRatio).toFixed(3)+'fr');
+  refs.shell.style.setProperty('--morning-track',(activeGroupRatio*(1-contactRatio)).toFixed(3)+'fr');
   refs.shell.style.setProperty('--attendance-track',(1-groupRatio).toFixed(3)+'fr');
 }
 function updateResponsiveSizing(){
