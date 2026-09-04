@@ -1674,3 +1674,127 @@
     line-height:1.45!important;
   }
 }
+
+/* mobile contact/morning stacking and non-overlapping edit controls */
+@media(max-width:700px) and (orientation:portrait){
+  .morning-visible .main-grid,
+  .attendance-hidden.morning-visible .main-grid,
+  .morning-visible .main-grid.panels-swapped,
+  .attendance-hidden.morning-visible .main-grid.panels-swapped{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    grid-auto-rows:auto!important;
+    align-content:start!important;
+    gap:10px!important;
+  }
+
+  .morning-visible .contact-panel,
+  .morning-visible .morning-panel,
+  .morning-visible .attendance-panel,
+  .attendance-hidden.morning-visible .contact-panel,
+  .attendance-hidden.morning-visible .morning-panel{
+    grid-column:1!important;
+    grid-row:auto!important;
+  }
+
+  .morning-visible .contact-panel,
+  .attendance-hidden.morning-visible .contact-panel{
+    order:1;
+  }
+
+  .morning-visible .morning-panel,
+  .attendance-hidden.morning-visible .morning-panel{
+    order:2;
+    display:flex!important;
+  }
+
+  .morning-visible .attendance-panel{
+    order:3;
+  }
+
+  .morning-visible .morning-resize,
+  .morning-visible #mainResizeHandle{
+    display:none!important;
+  }
+
+  .contact-panel .panel-head,
+  .morning-panel .panel-head{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+    align-items:stretch!important;
+    gap:10px!important;
+    min-height:0!important;
+  }
+
+  .contact-panel h1,
+  .morning-panel h1{
+    min-width:0;
+    white-space:normal!important;
+  }
+
+  .contact-panel .head-actions,
+  .morning-panel .head-actions{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr) minmax(74px,.48fr)!important;
+    width:100%!important;
+    gap:8px!important;
+    align-self:stretch!important;
+  }
+
+  .contact-panel .head-actions{
+    grid-template-columns:minmax(0,1fr) minmax(74px,.48fr) minmax(74px,.48fr)!important;
+  }
+
+  .contact-panel .head-actions input[type=date],
+  .contact-panel .head-actions button,
+  .morning-panel .head-actions .date-display-control,
+  .morning-panel .head-actions button{
+    width:100%!important;
+    min-width:0!important;
+    height:42px!important;
+    padding:0 8px!important;
+    font-size:15px!important;
+    line-height:1.1!important;
+  }
+
+  .contact-panel.editing{
+    overflow:visible!important;
+  }
+
+  .contact-panel.editing .editor,
+  .morning-panel.editing .editor{
+    overflow:visible!important;
+    padding-bottom:0!important;
+  }
+
+  .contact-panel.editing .editor-actions,
+  .morning-panel.editing .editor-actions{
+    position:static!important;
+    z-index:auto!important;
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    height:auto!important;
+    min-height:0!important;
+    gap:8px!important;
+    padding:0!important;
+    margin-top:2px!important;
+    background:transparent!important;
+  }
+
+  .contact-panel.editing .editor-actions button,
+  .morning-panel.editing .editor-actions button{
+    width:100%!important;
+    height:46px!important;
+    min-height:46px!important;
+    padding:0 8px!important;
+    border-radius:10px!important;
+    font-size:15px!important;
+    line-height:1.15!important;
+  }
+
+  .contact-panel.editing .editor textarea,
+  .morning-panel.editing .editor textarea{
+    position:relative;
+    z-index:1;
+  }
+}
