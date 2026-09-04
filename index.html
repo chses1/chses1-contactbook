@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
   <title>中山國小聯絡簿與學生簽到系統</title>
-  <link rel="stylesheet" href="style.css?v=20260904-header-clean" />
+  <link rel="stylesheet" href="style.css?v=20260904-save-label" />
 </head>
 <body>
   <div class="app-shell">
@@ -126,15 +126,21 @@
             <label><input id="noteToggle" type="checkbox" data-book-field="note" />生活叮嚀</label>
             <label><input id="teacherToggle" type="checkbox" data-book-field="teacher" />老師的話</label>
           </div>
+          <div class="quick-phrase-bar" data-quick-phrase-kind="book" aria-label="聯絡簿常用句快速插入">
+            <div class="quick-phrase-list" data-quick-phrase-list="book"></div>
+            <form class="quick-phrase-form" data-quick-phrase-form="book">
+              <input type="text" placeholder="新增常用句" maxlength="40" />
+              <button id="addQuickPhraseBtn" type="submit">新增</button>
+            </form>
+          </div>
           <div class="editor-field" data-book-field-panel="homework"><label for="homeworkInput">今日功課</label><textarea id="homeworkInput" rows="5"></textarea></div>
           <div class="editor-field" data-book-field-panel="reminder"><label for="reminderInput">明日提醒</label><textarea id="reminderInput" rows="1"></textarea></div>
           <div class="editor-field" data-book-field-panel="test"><label for="testInput">考試通知</label><textarea id="testInput" rows="1"></textarea></div>
           <div class="editor-field" data-book-field-panel="note"><label for="noteInput">生活叮嚀</label><textarea id="noteInput" rows="1"></textarea></div>
           <div class="editor-field" data-book-field-panel="teacher"><label for="teacherInput">老師的話</label><textarea id="teacherInput" rows="1"></textarea></div>
           <div class="editor-actions">
-            <button id="copyYesterdayBtn" class="outline-btn">貼上昨天的作業</button>
             <button id="markPhoneticBtn" class="white-btn" type="button">標注破音</button>
-            <button id="saveBookBtn" class="primary-btn">儲存並更新分享</button>
+            <button id="saveBookBtn" class="primary-btn">儲存</button>
           </div>
           <div class="phonetic-guide">標注破音：先在文字框反白一個中文字，再按「標注破音」，點選候選讀音後儲存。「顯示注音」會顯示國字加注音；「全注音」會只顯示注音，適合一年級使用。</div>
           <div id="autosaveHint" class="subtle">資料會自動儲存在本機瀏覽器。</div>
@@ -164,6 +170,13 @@
           <div id="emptyMorningMessage" class="empty-message">今天尚未填寫早自修事項</div>
         </div>
         <div id="morningEditor" class="editor morning-editor hidden">
+          <div class="quick-phrase-bar" data-quick-phrase-kind="morning" aria-label="早自修常用句快速插入">
+            <div class="quick-phrase-list" data-quick-phrase-list="morning"></div>
+            <form class="quick-phrase-form" data-quick-phrase-form="morning">
+              <input type="text" placeholder="新增常用句" maxlength="40" />
+              <button type="submit">新增</button>
+            </form>
+          </div>
           <div class="editor-field">
             <label for="morningInput">早自修交代事項</label>
             <textarea id="morningInput" rows="6"></textarea>
@@ -209,6 +222,10 @@
       </section>
     </main>
 
+    <footer class="footer-bar status-footer">
+      <div id="storageStatus" class="save-status-pill" role="status">資料已自動儲存於本機</div>
+      <div id="lastSaved" class="last-saved-text">尚未儲存</div>
+    </footer>
   </div>
 
   <dialog id="studentDialog" class="modal">
@@ -270,48 +287,63 @@
       <button class="close-btn" data-close="settingsDialog">×</button>
     </div>
     <div class="settings-body">
-      <label class="class-name-field" for="classNameInput">
-        <span>班級名稱</span>
-        <input id="classNameInput" type="text" placeholder="班級" maxlength="12" />
-      </label>
-      <label class="display-option-field late-setting-field" for="lateTime">
-        <span>
-          <strong>遲到時間</strong>
-          <small id="timeStatus">準時時段</small>
-        </span>
-        <input id="lateTime" type="time" value="07:50" />
-      </label>
-      <label class="display-option-field" for="showAttendanceToggle">
-        <span>
-          <strong>顯示學生簽到區</strong>
-          <small>關閉後主畫面不顯示簽到簿</small>
-        </span>
-        <input id="showAttendanceToggle" type="checkbox" />
-      </label>
-      <label class="display-option-field" for="showMorningToggle">
-        <span>
-          <strong>顯示早自修專區</strong>
-          <small>開啟後可編輯當天早自修交代事項</small>
-        </span>
-        <input id="showMorningToggle" type="checkbox" />
-      </label>
-      <div id="wakeLockStatus" class="wake-lock-status" role="status">螢幕喚醒準備中</div>
-      <button id="clearAllAttendanceBtn" class="danger-btn settings-danger-btn" type="button">清除所有出席紀錄</button>
-      <section class="cloud-bar settings-cloud-bar">
-        <div class="cloud-actions">
-          <button id="signInBtn" class="cloud-btn primary">教師 Google 登入</button>
-          <label class="share-attendance-toggle"><input id="shareAttendanceToggle" type="checkbox" /> 分享學生出席</label>
-          <button id="publishShareBtn" class="cloud-btn">更新家長分享</button>
-          <button id="copyShareBtn" class="cloud-btn">複製家長連結</button>
-          <button id="helpBtn" class="cloud-btn">使用說明</button>
-          <button id="signOutBtn" class="cloud-btn ghost">登出</button>
-        </div>
+      <section class="settings-section">
+        <h3>班級資訊</h3>
+        <label class="class-name-field" for="classNameInput">
+          <span>班級名稱</span>
+          <input id="classNameInput" type="text" placeholder="班級" maxlength="12" />
+        </label>
+      </section>
+      <section class="settings-section">
+        <h3>簽到設定</h3>
+        <label class="display-option-field late-setting-field" for="lateTime">
+          <span>
+            <strong>遲到時間</strong>
+            <small id="timeStatus">準時時段</small>
+          </span>
+          <input id="lateTime" type="time" value="07:50" />
+        </label>
+        <label class="display-option-field" for="showAttendanceToggle">
+          <span>
+            <strong>顯示學生簽到區</strong>
+            <small>關閉後主畫面不顯示簽到簿</small>
+          </span>
+          <input id="showAttendanceToggle" type="checkbox" />
+        </label>
+      </section>
+      <section class="settings-section">
+        <h3>畫面顯示</h3>
+        <label class="display-option-field" for="showMorningToggle">
+          <span>
+            <strong>顯示早自修專區</strong>
+            <small>開啟後可編輯當天早自修交代事項</small>
+          </span>
+          <input id="showMorningToggle" type="checkbox" />
+        </label>
+        <div id="wakeLockStatus" class="wake-lock-status" role="status">螢幕喚醒準備中</div>
+      </section>
+      <section class="settings-section">
+        <h3>家長分享</h3>
+        <section class="cloud-bar settings-cloud-bar">
+          <div class="cloud-actions">
+            <button id="signInBtn" class="cloud-btn primary">教師 Google 登入</button>
+            <label class="share-attendance-toggle"><input id="shareAttendanceToggle" type="checkbox" /> 分享學生出席</label>
+            <button id="publishShareBtn" class="cloud-btn">更新家長分享</button>
+            <button id="copyShareBtn" class="cloud-btn">複製家長連結</button>
+            <button id="helpBtn" class="cloud-btn">使用說明</button>
+            <button id="signOutBtn" class="cloud-btn ghost">登出</button>
+          </div>
+        </section>
+      </section>
+      <section class="settings-section danger-settings-section">
+        <h3>資料管理</h3>
+        <button id="clearAllAttendanceBtn" class="danger-btn settings-danger-btn" type="button">清除所有出席紀錄</button>
       </section>
     </div>
   </dialog>
 
   <script src="firebase-config.js"></script>
   <script src="phonetic-data.js"></script>
-  <script src="app.js?v=20260904-header-clean"></script>
+  <script src="app.js?v=20260904-save-label"></script>
 </body>
 </html>

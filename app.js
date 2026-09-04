@@ -50,7 +50,7 @@ const refs = {
   homeworkCard:$('homeworkCard'),reminderCard:$('reminderCard'),testCard:$('testCard'),noteCard:$('noteCard'),teacherCard:$('teacherCard'),emptyBookMessage:$('emptyBookMessage'),
   homeworkView:$('homeworkView'),reminderView:$('reminderView'),testView:$('testView'),noteView:$('noteView'),teacherView:$('teacherView'),
   bookFieldToggles:$('bookFieldToggles'),homeworkToggle:$('homeworkToggle'),reminderToggle:$('reminderToggle'),testToggle:$('testToggle'),noteToggle:$('noteToggle'),teacherToggle:$('teacherToggle'),
-  homeworkInput:$('homeworkInput'),reminderInput:$('reminderInput'),testInput:$('testInput'),noteInput:$('noteInput'),teacherInput:$('teacherInput'),saveBookBtn:$('saveBookBtn'),copyYesterdayBtn:$('copyYesterdayBtn'),markPhoneticBtn:$('markPhoneticBtn'),autosaveHint:$('autosaveHint'),
+  homeworkInput:$('homeworkInput'),reminderInput:$('reminderInput'),testInput:$('testInput'),noteInput:$('noteInput'),teacherInput:$('teacherInput'),saveBookBtn:$('saveBookBtn'),markPhoneticBtn:$('markPhoneticBtn'),autosaveHint:$('autosaveHint'),
   morningPanel:document.querySelector('.morning-panel'),morningDateLabel:$('morningDateLabel'),morningEditBtn:$('morningEditBtn'),morningDisplay:$('morningDisplay'),morningCard:$('morningCard'),morningView:$('morningView'),emptyMorningMessage:$('emptyMorningMessage'),morningEditor:$('morningEditor'),morningInput:$('morningInput'),morningMarkPhoneticBtn:$('morningMarkPhoneticBtn'),saveMorningBtn:$('saveMorningBtn'),morningAutosaveHint:$('morningAutosaveHint'),
   arrivedCount:$('arrivedCount'),absentCount:$('absentCount'),lateCount:$('lateCount'),leaveCount:$('leaveCount'),studentGrid:$('studentGrid'),namesBtn:$('namesBtn'),
   statsBtn:$('statsBtn'),recordsBtn:$('recordsBtn'),allOnTimeBtn:$('allOnTimeBtn'),resetBtn:$('resetBtn'),lastSaved:$('lastSaved'),
@@ -71,6 +71,7 @@ let screenWakeLock = null;
 let wakeLockWanted = false;
 let wakeLockStatus = 'idle';
 let wakeLockRetryTimer = null;
+let lastInsertTextarea = null;
 const cloud = {
   configured:isFirebaseConfigured(),
   parentShareId:new URLSearchParams(location.search).get('share') || '',
@@ -122,6 +123,9 @@ function normalizeState(s={}){
       className:s.settings?.className || '',
       showAttendance:s.settings?.showAttendance !== false,
       showMorning:s.settings?.showMorning === true,
+      quickPhrases:Array.isArray(s.settings?.quickPhrases) ? s.settings.quickPhrases.filter(x=>String(x||'').trim()).map(x=>String(x).trim()).slice(0,24) : [],
+      bookQuickPhrases:Array.isArray(s.settings?.bookQuickPhrases) ? s.settings.bookQuickPhrases.filter(x=>String(x||'').trim()).map(x=>String(x).trim()).slice(0,24) : (Array.isArray(s.settings?.quickPhrases) ? s.settings.quickPhrases.filter(x=>String(x||'').trim()).map(x=>String(x).trim()).slice(0,24) : []),
+      morningQuickPhrases:Array.isArray(s.settings?.morningQuickPhrases) ? s.settings.morningQuickPhrases.filter(x=>String(x||'').trim()).map(x=>String(x).trim()).slice(0,24) : [],
       layout:s.settings?.layout || {}
     }
   };
@@ -135,7 +139,13 @@ function loadState(){
 function save(){
   localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
   if(refs.lastSaved) refs.lastSaved.textContent='最後儲存：'+nowTime();
+  setStorageStatus(cloud.user ? '已儲存本機，準備同步' : '已自動儲存於本機',cloud.user ? 'saving' : 'local');
   if(!isApplyingRemoteState) queueCloudSave();
+}
+function setStorageStatus(message,status='local'){
+  if(!refs.storageStatus) return;
+  refs.storageStatus.textContent=message;
+  refs.storageStatus.dataset.status=status;
 }
 function defaultBookFields(){ return Object.fromEntries(BOOK_FIELDS.map(([key])=>[key,key==='homework'])); }
 function ensureDay(key){
@@ -480,10 +490,11 @@ function wireEvents(){
   });
   contactBookInputEntries().forEach(([,textarea])=>{
     const remember=()=>capturePhoneticSelection(textarea);
-    textarea.addEventListener('input',()=>{writeBookFromInputs(); remember(); save(); refs.autosaveHint.textContent='已自動儲存：'+nowTime();});
-    ['focus','select','keyup','mouseup','pointerup'].forEach(type=>textarea.addEventListener(type,remember));
+    const rememberInsertTarget=()=>{ lastInsertTextarea=textarea; remember(); };
+    textarea.addEventListener('input',()=>{writeBookFromInputs(); rememberInsertTarget(); save(); refs.autosaveHint.textContent='已自動儲存：'+nowTime();});
+    ['focus','select','keyup','mouseup','pointerup'].forEach(type=>textarea.addEventListener(type,rememberInsertTarget));
   });
-  refs.copyYesterdayBtn.onclick=()=>{ const d=new Date(selectedDate+'T00:00:00'); d.setDate(d.getDate()-1); const y=dateKey(d); if(state.books[y]){ ensureDay(selectedDate); state.books[selectedDate]={...state.books[selectedDate],homework:state.books[y].homework||''}; renderBook(); save(); } else alert('前一天沒有聯絡簿內容'); };
+  document.querySelectorAll('[data-quick-phrase-form]').forEach(form=>form.addEventListener('submit',addQuickPhrase));
   refs.markPhoneticBtn.onmousedown=e=>e.preventDefault();
   refs.markPhoneticBtn.onclick=openPhoneticEditor;
   if(refs.morningMarkPhoneticBtn) refs.morningMarkPhoneticBtn.onmousedown=e=>e.preventDefault();
@@ -513,8 +524,9 @@ function wireEvents(){
   if(refs.saveMorningBtn) refs.saveMorningBtn.onclick=()=>{ writeMorningFromInput(); morningEditMode=false; renderMorning(); save(); };
   if(refs.morningInput){
     const rememberMorning=()=>capturePhoneticSelection(refs.morningInput);
-    refs.morningInput.addEventListener('input',()=>{ writeMorningFromInput(); rememberMorning(); save(); if(refs.morningAutosaveHint) refs.morningAutosaveHint.textContent='已自動儲存：'+nowTime(); });
-    ['focus','select','keyup','mouseup','pointerup'].forEach(type=>refs.morningInput.addEventListener(type,rememberMorning));
+    const rememberMorningInsertTarget=()=>{ lastInsertTextarea=refs.morningInput; rememberMorning(); };
+    refs.morningInput.addEventListener('input',()=>{ writeMorningFromInput(); rememberMorningInsertTarget(); save(); if(refs.morningAutosaveHint) refs.morningAutosaveHint.textContent='已自動儲存：'+nowTime(); });
+    ['focus','select','keyup','mouseup','pointerup'].forEach(type=>refs.morningInput.addEventListener(type,rememberMorningInsertTarget));
   }
   refs.clearAllAttendanceBtn.onclick=clearAllAttendanceRecords;
   refs.signInBtn.onclick=signInTeacher;
@@ -527,6 +539,89 @@ function wireEvents(){
   refs.markLateBtn.onclick=()=>{markSeat(selectedSeat,'late'); refs.studentDialog.close();};
   refs.markLeaveBtn.onclick=()=>{markSeat(selectedSeat,'leave'); refs.studentDialog.close();};
   refs.markAbsentBtn.onclick=()=>{markSeat(selectedSeat,'absent'); refs.studentDialog.close();};
+}
+function quickPhraseKey(kind){
+  return kind==='morning' ? 'morningQuickPhrases' : 'bookQuickPhrases';
+}
+function getQuickPhrases(kind){
+  const key=quickPhraseKey(kind);
+  return Array.isArray(state.settings[key]) ? state.settings[key] : [];
+}
+function setQuickPhrases(kind,phrases){
+  state.settings[quickPhraseKey(kind)]=phrases.filter(x=>String(x||'').trim()).map(x=>String(x).trim()).slice(0,24);
+}
+function insertQuickPhrase(phrase,kind='book'){
+  if(!phrase) return;
+  const preferredInputs=kind==='morning' ? [refs.morningInput] : contactBookInputEntries().map(([,input])=>input);
+  const inputs=preferredInputs.filter(input=>input && !input.closest('.hidden'));
+  const target=inputs.includes(document.activeElement) ? document.activeElement : (inputs.includes(lastInsertTextarea) ? lastInsertTextarea : (kind==='morning' ? refs.morningInput : refs.homeworkInput));
+  if(!target) return;
+  const start=target.selectionStart ?? target.value.length;
+  const end=target.selectionEnd ?? start;
+  const before=target.value.slice(0,start);
+  const after=target.value.slice(end);
+  const prefix=before && !before.endsWith('\n') ? '\n' : '';
+  const suffix=after && !after.startsWith('\n') ? '\n' : '';
+  const inserted=prefix+phrase+suffix;
+  target.setRangeText(inserted,start,end,'end');
+  target.focus();
+  lastInsertTextarea=target;
+  if(target===refs.morningInput) writeMorningFromInput();
+  else writeBookFromInputs();
+  capturePhoneticSelection(target);
+  save();
+  const hint=target===refs.morningInput ? refs.morningAutosaveHint : refs.autosaveHint;
+  if(hint) hint.textContent='已插入常用句並自動儲存：'+nowTime();
+}
+function renderQuickPhrases(){
+  const lists=document.querySelectorAll('[data-quick-phrase-list]');
+  if(!lists.length) return;
+  lists.forEach(list=>{
+    const kind=list.dataset.quickPhraseList || 'book';
+    const phrases=getQuickPhrases(kind);
+    list.innerHTML='';
+    if(!phrases.length){
+      list.innerHTML='<div class="quick-phrase-empty">尚未新增常用句</div>';
+      return;
+    }
+    phrases.forEach((phrase,index)=>{
+      const item=document.createElement('span');
+      item.className='quick-phrase-item';
+      const insertBtn=document.createElement('button');
+      insertBtn.type='button';
+      insertBtn.className='quick-phrase-insert';
+      insertBtn.textContent=phrase;
+      insertBtn.onmousedown=e=>e.preventDefault();
+      insertBtn.onclick=()=>insertQuickPhrase(phrase,kind);
+      const deleteBtn=document.createElement('button');
+      deleteBtn.type='button';
+      deleteBtn.className='quick-phrase-delete';
+      deleteBtn.setAttribute('aria-label','刪除常用句');
+      deleteBtn.textContent='×';
+      deleteBtn.onclick=()=>removeQuickPhrase(kind,index);
+      item.append(insertBtn,deleteBtn);
+      list.appendChild(item);
+    });
+  });
+}
+function addQuickPhrase(e){
+  e.preventDefault();
+  const input=e.currentTarget?.querySelector('input');
+  const kind=e.currentTarget?.dataset.quickPhraseForm || 'book';
+  const phrase=String(input?.value || '').trim();
+  if(!phrase) return;
+  const phrases=getQuickPhrases(kind);
+  if(!phrases.includes(phrase)) phrases.push(phrase);
+  setQuickPhrases(kind,phrases);
+  input.value='';
+  renderQuickPhrases();
+  save();
+}
+function removeQuickPhrase(kind,index){
+  const phrases=getQuickPhrases(kind);
+  setQuickPhrases(kind,phrases.filter((_,i)=>i!==index));
+  renderQuickPhrases();
+  save();
 }
 function toggleFormatPanel(){
   const open=refs.formatPanel.classList.toggle('hidden')===false;
@@ -725,6 +820,7 @@ function renderBook(){
   refs.bookFieldToggles?.querySelectorAll('input[data-book-field]').forEach(toggle=>{
     toggle.checked=!!enabled[toggle.dataset.bookField];
   });
+  renderQuickPhrases();
   refs.editor?.querySelectorAll('[data-book-field-panel]').forEach(panel=>{
     panel.classList.toggle('hidden',!enabled[panel.dataset.bookFieldPanel]);
   });
@@ -740,6 +836,7 @@ function renderMorning(){
   refs.morningPanel.classList.toggle('hidden',!visible);
   if(!visible) return;
   if(refs.morningDateLabel) refs.morningDateLabel.textContent=displayDate(selectedDate);
+  renderQuickPhrases();
   const text=state.morningNotes?.[selectedDate] || '';
   const entries=getBookLineEntries(text);
   refs.morningView.innerHTML=formatBookText(entries,1,'morning');
@@ -946,24 +1043,24 @@ function updateCloudUi(message){
   if(shareMode){
     if(refs.cloudModeLabel) refs.cloudModeLabel.textContent='家長分享模式';
     if(refs.cloudHint) refs.cloudHint.textContent=message || '正在讀取老師分享的聯絡簿。';
-    if(refs.storageStatus) refs.storageStatus.textContent='▣ 家長只讀分享頁';
+    setStorageStatus('家長只讀分享頁','readonly');
     return;
   }
   if(!cloud.configured){
     if(refs.cloudModeLabel) refs.cloudModeLabel.textContent='本機模式';
     if(refs.cloudHint) refs.cloudHint.textContent='本系統可以單機使用亦可登入 Google 帳號。';
-    if(refs.storageStatus) refs.storageStatus.textContent='▣ 資料已自動儲存於本機';
+    setStorageStatus('已自動儲存於本機','local');
     return;
   }
   if(cloud.user){
     if(refs.cloudModeLabel) refs.cloudModeLabel.textContent='教師雲端同步';
     if(refs.cloudHint) refs.cloudHint.textContent=message && !/同步|教師雲端資料/.test(message) ? message : teacherWelcomeHint();
-    if(refs.storageStatus) refs.storageStatus.textContent='▣ 資料已儲存在本機並同步到教師雲端';
+    setStorageStatus(message && /失敗/.test(message) ? message : (message && /已同步/.test(message) ? message : '已同步到教師雲端'),message && /失敗/.test(message) ? 'error' : 'cloud');
     return;
   }
   if(refs.cloudModeLabel) refs.cloudModeLabel.textContent='雲端待登入';
   if(refs.cloudHint) refs.cloudHint.textContent=message || '本系統可以單機使用亦可登入 Google 帳號。';
-  if(refs.storageStatus) refs.storageStatus.textContent='▣ 未登入時先儲存在本機';
+  setStorageStatus('未登入，先儲存在本機','local');
 }
 async function initCloud(){
   updateCloudUi();
@@ -1066,6 +1163,7 @@ function applyStateFromCloud(nextState){
   applyLayout();
   renderAll();
   if(refs.lastSaved) refs.lastSaved.textContent='最後同步：'+nowTime();
+  setStorageStatus('已同步到教師雲端','cloud');
   isApplyingRemoteState=false;
 }
 async function subscribeTeacherData(){
@@ -1087,6 +1185,7 @@ async function subscribeTeacherData(){
 }
 function queueCloudSave(){
   if(!cloud.user || !cloud.api || !cloud.db) return;
+  setStorageStatus('已儲存本機，等待雲端同步','saving');
   clearTimeout(cloudSaveTimer);
   cloudSaveTimer=setTimeout(async()=>{
     try{
@@ -1094,6 +1193,7 @@ function queueCloudSave(){
       updateCloudUi('已同步到教師雲端：'+nowTime());
     }catch(err){
       console.error(err);
+      setStorageStatus('雲端同步失敗，本機已保留','error');
       updateCloudUi('雲端儲存失敗，已先保留在本機。');
     }
   },650);
@@ -1338,7 +1438,7 @@ function showHelp(){
       <section><h3>Q：如何設定學生名單？</h3><p>A：按「名單設定」，可貼上校務系統或教師手冊名冊，也可每行輸入「座號,姓名」。空號會自動略過。</p></section>
       <section><h3>Q：如何登記學生到校？</h3><p>A：點學生座號即可依目前時間記為準時或遲到；再次點同一位學生可改為準時、遲到、請假或未到。</p></section>
       <section><h3>Q：全班都到齊時怎麼操作？</h3><p>A：按「全班準時出席」，確認後會把今天名單內所有學生標記為準時。</p></section>
-      <section><h3>Q：如何分享給家長？</h3><p>A：登入教師 Google 帳號後，編輯聯絡簿時按「儲存並更新分享」即可同步給家長。家長頁會依實際日期顯示當天聯絡簿；例如今天先編明天，內容會預先儲存，但要到明天才會顯示在家長連結。第一次分享或需要重複複製連結時，也可在系統設定按「更新家長分享」。需要顯示座號出席狀態時，先勾選「分享學生出席」。</p></section>
+      <section><h3>Q：如何分享給家長？</h3><p>A：登入教師 Google 帳號後，編輯聯絡簿時按「儲存」即可同步給家長。家長頁會依實際日期顯示當天聯絡簿；例如今天先編明天，內容會預先儲存，但要到明天才會顯示在家長連結。第一次分享或需要重複複製連結時，也可在系統設定按「更新家長分享」。需要顯示座號出席狀態時，先勾選「分享學生出席」。</p></section>
       <section><h3>Q：一般分頁會避免螢幕休眠嗎？</h3><p>A：教師主畫面開著且分頁可見時，系統會自動嘗試保持螢幕喚醒；若瀏覽器不支援或 Windows 電源政策阻擋，仍需調整「螢幕與睡眠」和「螢幕保護程式」。</p></section>
       <section><h3>Q：班級名稱在哪裡設定？</h3><p>A：在「系統設定」填入班級名稱，畫面與家長分享標題會顯示為該班級的聯絡簿。</p></section>
     </div>

@@ -403,7 +403,7 @@
 .contact-panel.editing .editor-field label{display:block;font-weight:900;color:#17315c;min-height:0}
 .contact-panel.editing .editor textarea{display:block;flex:0 0 auto;height:calc(1.6em + 28px);min-height:48px;max-height:none;margin-top:0;overflow:auto}
 .contact-panel.editing .editor [data-book-field-panel="homework"] textarea{height:calc(8em + 28px);min-height:132px}
-.contact-panel.editing .editor-actions{position:sticky;bottom:0;z-index:2;display:grid;grid-template-columns:1fr 1fr 1fr;align-self:stretch;height:66px;min-height:66px;gap:12px;padding-top:8px;background:#fff}
+.contact-panel.editing .editor-actions{position:sticky;bottom:0;z-index:2;display:grid;grid-template-columns:1fr 1fr;align-self:stretch;height:66px;min-height:66px;gap:12px;padding-top:8px;background:#fff}
 .contact-panel.editing .editor-actions button{width:100%;height:58px;font-size:20px;border-radius:12px}
 .contact-panel.editing #autosaveHint{display:none}
 .phonetic-guide{grid-column:1/-1;padding:10px 12px;border:1px solid #dbe7f5;border-radius:10px;background:#f8fbff;color:#334155;font-size:15px;font-weight:800;line-height:1.45}
@@ -1343,6 +1343,259 @@
   }
   .icon-btn span{
     font-size:12px!important;
+  }
+}
+
+/* priority usability tools */
+.contact-panel .panel-head,
+.morning-panel .panel-head,
+.attendance-panel .panel-head{
+  align-items:center;
+  gap:8px;
+  min-height:46px;
+}
+.contact-panel h1,
+.morning-panel h1,
+.attendance-panel h1{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0;
+  color:#06225c;
+  font-size:clamp(24px,calc(28px * var(--panel-scale)),32px)!important;
+  font-weight:950;
+  line-height:1.12;
+  letter-spacing:0;
+  white-space:nowrap;
+}
+.contact-panel .title-icon,
+.morning-panel .title-icon,
+.attendance-panel .title-icon{
+  flex:0 0 auto;
+  width:clamp(28px,calc(32px * var(--panel-scale)),36px)!important;
+  height:clamp(28px,calc(32px * var(--panel-scale)),36px)!important;
+  margin-right:0!important;
+  border-radius:10px;
+  font-size:clamp(17px,calc(19px * var(--panel-scale)),21px)!important;
+}
+.panel-meta{display:none}
+.status-footer{
+  flex:0 0 auto;
+  min-height:34px;
+  height:auto;
+  justify-content:space-between;
+  gap:12px;
+  padding:5px 12px;
+  border:1px solid rgba(147,197,253,.28);
+  background:rgba(5,18,53,.74);
+  color:#c9d8f5;
+}
+.save-status-pill{
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  padding:2px 9px;
+  border:1px solid rgba(147,197,253,.42);
+  border-radius:999px;
+  background:rgba(219,234,254,.1);
+  color:#dbeafe;
+  font-size:13px;
+  font-weight:950;
+  line-height:1.15;
+  white-space:nowrap;
+}
+.save-status-pill:before{
+  content:"";
+  width:9px;
+  height:9px;
+  margin-right:7px;
+  border-radius:50%;
+  background:#60a5fa;
+}
+.save-status-pill[data-status="saving"]{
+  border-color:rgba(253,230,138,.62);
+  background:rgba(245,158,11,.14);
+  color:#fde68a;
+}
+.save-status-pill[data-status="saving"]:before{
+  background:#f59e0b;
+}
+.save-status-pill[data-status="cloud"]{
+  border-color:rgba(134,239,172,.64);
+  background:rgba(22,163,74,.15);
+  color:#bbf7d0;
+}
+.save-status-pill[data-status="cloud"]:before{
+  background:#16a34a;
+}
+.save-status-pill[data-status="error"]{
+  border-color:rgba(254,202,202,.7);
+  background:rgba(220,38,38,.16);
+  color:#fecaca;
+}
+.save-status-pill[data-status="error"]:before{
+  background:#dc2626;
+}
+.save-status-pill[data-status="readonly"]{
+  border-color:rgba(203,213,225,.54);
+  background:rgba(248,250,252,.1);
+  color:#e2e8f0;
+}
+.save-status-pill[data-status="readonly"]:before{
+  background:#64748b;
+}
+.last-saved-text{
+  color:#b7c8e9;
+  font-size:13px;
+  font-weight:850;
+  white-space:nowrap;
+}
+.quick-phrase-bar{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:8px;
+  padding:10px;
+  border:1px solid #dbe7f5;
+  border-radius:12px;
+  background:#f8fbff;
+}
+.quick-phrase-bar:before{
+  content:"聯絡簿常用句";
+  color:#17315c;
+  font-size:15px;
+  font-weight:950;
+}
+.quick-phrase-bar[data-quick-phrase-kind="morning"]:before{
+  content:"早自修常用句";
+}
+.quick-phrase-list{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.quick-phrase-empty{
+  color:#64748b;
+  font-size:14px;
+  font-weight:850;
+}
+.quick-phrase-item{
+  display:inline-flex;
+  align-items:center;
+  overflow:hidden;
+  border:1px solid #cbd9eb;
+  border-radius:10px;
+  background:#fff;
+}
+.quick-phrase-bar button,
+.quick-phrase-form input{
+  font-family:inherit;
+}
+.quick-phrase-insert,
+.quick-phrase-delete,
+.quick-phrase-form button{
+  min-height:36px;
+  border:0;
+  background:#fff;
+  color:#1f365d;
+  font-size:15px;
+  font-weight:950;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.quick-phrase-insert{
+  padding:0 11px;
+}
+.quick-phrase-delete{
+  width:32px;
+  border-left:1px solid #e2e8f0;
+  color:#64748b;
+}
+.quick-phrase-insert:hover,
+.quick-phrase-delete:hover{
+  background:#eff6ff;
+  color:#0b56c6;
+}
+.quick-phrase-form{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 64px;
+  gap:8px;
+}
+.quick-phrase-form input{
+  min-width:0;
+  height:38px;
+  border:1px solid #cbd9eb;
+  border-radius:10px;
+  background:#fff;
+  color:#13284c;
+  padding:0 11px;
+  font-size:15px;
+  font-weight:850;
+}
+.quick-phrase-form button{
+  border:1px solid #1167df;
+  border-radius:10px;
+  background:#1167df;
+  color:#fff;
+}
+.settings-body{
+  gap:12px;
+}
+.settings-section{
+  display:grid;
+  gap:10px;
+  padding:12px;
+  border:1px solid #dbe7f5;
+  border-radius:12px;
+  background:#f8fbff;
+}
+.settings-section h3{
+  margin:0;
+  color:#0b2b7e;
+  font-size:17px;
+  font-weight:950;
+  line-height:1.2;
+}
+.settings-section .class-name-field,
+.settings-section .display-option-field,
+.settings-section .wake-lock-status{
+  background:#fff;
+}
+.danger-settings-section{
+  background:#fff7f8;
+  border-color:#fecdd3;
+}
+.danger-settings-section h3{
+  color:#be123c;
+}
+.settings-danger-btn{
+  margin:0;
+}
+
+@media(max-width:700px) and (orientation:portrait){
+  .status-footer{
+    align-items:flex-start;
+    flex-direction:column;
+    min-height:0;
+  }
+  .save-status-pill{
+    max-width:100%;
+    white-space:normal;
+  }
+  .last-saved-text{
+    white-space:normal;
+  }
+  .quick-phrase-bar:before{
+    width:100%;
+  }
+  .quick-phrase-item{
+    flex:1 1 calc(50% - 8px);
+  }
+  .quick-phrase-insert{
+    flex:1;
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
   }
 }
 
