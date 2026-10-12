@@ -863,6 +863,16 @@ function fitBookText(){
   cards.forEach(card=>{
     const text=card.querySelector('.book-text'), title=card.querySelector('h2');
     if(!text || !title) return;
+    // Text can overflow inside its clipped container without changing the card's
+    // scroll size, especially when vertical columns extend toward the left.
+    const overflows=()=>{
+      if(card.scrollHeight>card.clientHeight+1 || card.scrollWidth>card.clientWidth+1 || text.scrollHeight>text.clientHeight+1 || text.scrollWidth>text.clientWidth+1) return true;
+      const bounds=text.getBoundingClientRect();
+      return [...text.querySelectorAll('.book-line')].some(line=>{
+        const rect=line.getBoundingClientRect();
+        return rect.left<bounds.left-1 || rect.right>bounds.right+1 || rect.top<bounds.top-1 || rect.bottom>bounds.bottom+1;
+      });
+    };
     text.style.fontSize=''; title.style.fontSize='';
     const minSize=visibleCount>1 ? 12 : 14;
     let low=minSize, high=48*scale, best=low;
@@ -870,12 +880,12 @@ function fitBookText(){
       const size=(low+high)/2;
       text.style.fontSize=size+'px';
       title.style.fontSize=Math.min(size*.78,34*scale)+'px';
-      const overflow=card.scrollHeight>card.clientHeight+1 || card.scrollWidth>card.clientWidth+1;
+      const overflow=overflows();
       if(overflow) high=size; else { best=size; low=size; }
     }
     text.style.fontSize=best+'px';
     title.style.fontSize=Math.min(best*.78,34*scale)+'px';
-    while(best>minSize && (card.scrollHeight>card.clientHeight+1 || card.scrollWidth>card.clientWidth+1)){
+    while(best>minSize && overflows()){
       best-=1;
       text.style.fontSize=best+'px';
       title.style.fontSize=Math.min(best*.78,34*scale)+'px';

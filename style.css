@@ -218,8 +218,17 @@
 .vertical-mode .line-no{display:block;margin:0 0 .18em;writing-mode:horizontal-tb;line-height:1;text-align:center}
 .vertical-mode .inline-token{display:inline-flex;writing-mode:horizontal-tb;line-height:1;align-items:center;justify-content:center;text-align:center;min-width:max-content}
 .vertical-mode[data-phonetic-mode="zhuyin"] .book-text{gap:calc(.85em * var(--book-line-height-scale,1))}
-.vertical-mode[data-phonetic-mode="zhuyin"] .book-line>span:last-child{display:flex;flex-direction:column;align-items:center;gap:.28em;writing-mode:horizontal-tb;text-orientation:mixed}
-.vertical-mode[data-phonetic-mode="zhuyin"] .zhuyin-only-token{display:grid;grid-template-columns:1em .42em;align-items:center;justify-items:center;min-width:1.45em;margin:.04em 0;line-height:1}
+.book-card>div:not(.circle-icon),.book-line>span:last-child{min-width:0}
+.horizontal-mode .book-line>span:last-child{overflow-wrap:anywhere}
+/* Use native vertical line wrapping so each syllable stays together and long
+   entries continue in a new column before the fit routine reduces the font. */
+@media(min-width:701px), (orientation:landscape){
+  body:not(.parent-share-mode) .vertical-mode[data-phonetic-mode="zhuyin"] .book-text,
+  body:not(.parent-share-mode) .vertical-mode[data-phonetic-mode="zhuyin"] .book-line{height:100%;min-height:0}
+  body:not(.parent-share-mode) .vertical-mode[data-phonetic-mode="zhuyin"] .book-line>span:last-child{flex:0 0 auto;height:calc(100% - 1.63em);min-height:0;display:block;writing-mode:vertical-rl;text-orientation:mixed;text-align:start;line-height:calc(1.85 * var(--book-line-height-scale,1))}
+  body:not(.parent-share-mode) .vertical-mode[data-phonetic-mode="zhuyin"] .line-no{align-self:flex-end;width:1.49em}
+}
+.vertical-mode[data-phonetic-mode="zhuyin"] .zhuyin-only-token{display:inline-grid;writing-mode:horizontal-tb;grid-template-columns:1em .42em;align-items:center;justify-items:center;min-width:1.45em;margin:.14em .04em;vertical-align:middle;line-height:1}
 .vertical-mode[data-phonetic-mode="zhuyin"] .zhuyin-body{writing-mode:vertical-rl;text-orientation:upright;line-height:1}
 .vertical-mode[data-phonetic-mode="zhuyin"] .zhuyin-tone{align-self:center;justify-self:center;font-size:.82em;line-height:1}
 .vertical-mode .circle-icon{flex:0 0 auto}
@@ -1640,10 +1649,19 @@
 .parent-share-mode .book-display .book-text{
   text-align:left!important;
 }
-.parent-share-mode .book-display .inline-token,
-.parent-share-mode .book-display .zhuyin-only-token{
+.parent-share-mode .book-display .inline-token{
   display:inline!important;
   white-space:normal!important;
+}
+.parent-share-mode .book-display .book-line>span:last-child{
+  overflow-wrap:anywhere;
+}
+.parent-share-mode .book-display .zhuyin-only-token{
+  display:inline-grid!important;
+  white-space:nowrap!important;
+}
+.parent-share-mode .book-display .zhuyin-body{
+  writing-mode:horizontal-tb!important;
 }
 .parent-share-mode .contact-panel{
   flex:0 0 auto!important;
